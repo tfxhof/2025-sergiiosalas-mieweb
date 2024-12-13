@@ -31,7 +31,7 @@ def calculate_mie_arrays(material_data, radius):
     return results
 
 # Conectar a la base de datos SQLite
-db_path = r"C:\\Users\\sersa\\Desktop\\UC\\tfg\\tfg\\prueba.db"
+db_path = r"C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\pruebas\prueba.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
