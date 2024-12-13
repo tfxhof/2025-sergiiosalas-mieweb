@@ -44,26 +44,28 @@ page_selectors = pn.Column()
 
 # Función que se ejecuta cuando el usuario selecciona materiales
 def mostrar_seleccion(event):
-    # Limpiar los selectores de páginas anteriores
-    page_selectors.clear()
-
     # Obtener los materiales seleccionados
-    seleccionados = event.new
+    seleccionados = set(event.new)
 
+    # Eliminar los selectores de páginas de los materiales que ya no están seleccionados
+    for widget in list(page_selectors):
+        if widget.name.split(" para ")[1] not in seleccionados:
+            page_selectors.remove(widget)
+
+    # Añadir selectores de páginas para los nuevos materiales seleccionados
     for nombre in seleccionados:
-        page = material_dict[nombre]
+        if not any(widget.name.split(" para ")[1] == nombre for widget in page_selectors):
+            # Consultar las páginas del material seleccionado
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT page, book FROM pages WHERE book = ?", (nombre,))
+            paginas = cursor.fetchall()
+            conn.close()
 
-        # Consultar las páginas del material seleccionado
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT page, book FROM pages WHERE book = ?", (nombre,))
-        paginas = cursor.fetchall()
-        conn.close()
-
-        # Crear un selector para las páginas del material
-        opciones_paginas = [str(pagina[0]) for pagina in paginas]
-        page_selector = pn.widgets.Select(name=f"Seleccionar página para {nombre}", options=opciones_paginas)
-        page_selectors.append(page_selector)
+            # Crear un selector para las páginas del material
+            opciones_paginas = [str(pagina[0]) for pagina in paginas]
+            page_selector = pn.widgets.Select(name=f"Seleccionar página para {nombre}", options=opciones_paginas)
+            page_selectors.append(page_selector)
 
 # Conectar la función de selección a los multi-choice
 multi_choice.param.watch(mostrar_seleccion, 'value')
