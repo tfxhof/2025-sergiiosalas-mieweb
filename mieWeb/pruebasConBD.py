@@ -1,0 +1,73 @@
+import sqlite3
+import panel as pn
+
+# Ruta a la base de datos
+db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
+
+# Función para conectar a la base de datos y obtener los nombres de los materiales y sus páginas
+def obtener_nombres_materiales():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Consultar los nombres de los materiales y sus páginas
+    cursor.execute("SELECT page, book FROM pages")
+
+    # Obtener todos los resultados
+    materiales = cursor.fetchall()
+
+    conn.close()
+
+    # Usar un conjunto para rastrear nombres únicos y un diccionario para los resultados
+    nombres_vistos = set()
+    material_dict = {}
+
+    for material in materiales:
+        page, nombre = material
+        if nombre not in nombres_vistos:
+            material_dict[nombre] = page
+            nombres_vistos.add(nombre)
+
+    # Ordenar la lista de nombres únicos alfabéticamente
+    nombres_unicos = sorted(material_dict.keys())
+
+    return nombres_unicos, material_dict
+
+# Obtener los nombres de los materiales y el diccionario de materiales
+nombres_materiales, material_dict = obtener_nombres_materiales()
+
+# Crear un widget de selección múltiple con Panel
+multi_choice = pn.widgets.MultiChoice(name="Seleccionar Materiales", options=nombres_materiales, width=400,
+                                      placeholder="Seleccione los materiales que desee")
+
+# Contenedor para los widgets de selección de páginas
+page_selectors = pn.Column()
+
+# Función que se ejecuta cuando el usuario selecciona materiales
+def mostrar_seleccion(event):
+    # Limpiar los selectores de páginas anteriores
+    page_selectors.clear()
+
+    # Obtener los materiales seleccionados
+    seleccionados = event.new
+
+    for nombre in seleccionados:
+        page = material_dict[nombre]
+
+        # Consultar las páginas del material seleccionado
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT page, book FROM pages WHERE book = ?", (nombre,))
+        paginas = cursor.fetchall()
+        conn.close()
+
+        # Crear un selector para las páginas del material
+        opciones_paginas = [str(pagina[0]) for pagina in paginas]
+        page_selector = pn.widgets.Select(name=f"Seleccionar página para {nombre}", options=opciones_paginas)
+        page_selectors.append(page_selector)
+
+# Conectar la función de selección a los multi-choice
+multi_choice.param.watch(mostrar_seleccion, 'value')
+
+# Mostrar los widgets
+pn.extension()
+pn.Column(multi_choice, page_selectors).show()
