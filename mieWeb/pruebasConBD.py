@@ -85,6 +85,10 @@ def mostrar_seleccion(event):
                         'n': db.get_material_n_numpy(page_id),
                         'k': db.get_material_k_numpy(page_id)
                     }
+                    # Print the values of n and k in the terminal
+                    print(f"Page ID: {page_id}")
+                    print(f"n: {material_data[page_id]['n']}")
+                    print(f"k: {material_data[page_id]['k']}")
 
             # Conectar la función de actualización al selector de páginas
             page_selector.param.watch(actualizar_valores, 'value')
