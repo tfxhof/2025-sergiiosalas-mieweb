@@ -43,7 +43,7 @@ multi_choice = pn.widgets.MultiChoice(name="Seleccionar Materiales", options=nom
 # Contenedor para los widgets de selección de páginas
 page_selectors = pn.Column()
 
-# Diccionario para almacenar los valores de n y k para cada página
+# Diccionario para almacenar los valores de lambda, n y k para cada página
 material_data = {}
 
 # Función que se ejecuta cuando el usuario selecciona materiales
@@ -71,7 +71,7 @@ def mostrar_seleccion(event):
             page_selector = pn.widgets.Select(name=f"Seleccionar página para {nombre}", options=opciones_paginas, value='Seleccione página')
             page_selectors.append(page_selector)
 
-            # Función para actualizar los valores de n y k cuando se selecciona una página
+            # Función para actualizar los valores de lambda, n y k cuando se selecciona una página
             def actualizar_valores(event):
                 if event.new != 'Seleccione página':
                     page_name = event.new
@@ -81,14 +81,19 @@ def mostrar_seleccion(event):
                     page_id = cursor.fetchone()[0]
                     conn.close()
                     db = DB.Database(db_path)
+                    lambda_array = db.get_material_n_numpy(page_id)[:, 0]  # Assuming the first column is lambda
+                    n_array = db.get_material_n_numpy(page_id)[:, 1]
+                    k_array = db.get_material_k_numpy(page_id)[:, 1]
                     material_data[page_id] = {
-                        'n': db.get_material_n_numpy(page_id),
-                        'k': db.get_material_k_numpy(page_id)
+                        'lambda': lambda_array,
+                        'n': n_array,
+                        'k': k_array
                     }
-                    # Print the values of n and k in the terminal
+                    # Print the values to verify
                     print(f"Page ID: {page_id}")
-                    print(f"n: {material_data[page_id]['n']}")
-                    print(f"k: {material_data[page_id]['k']}")
+                    print(f"Lambda: {lambda_array}")
+                    print(f"n: {n_array}")
+                    print(f"k: {k_array}")
 
             # Conectar la función de actualización al selector de páginas
             page_selector.param.watch(actualizar_valores, 'value')
