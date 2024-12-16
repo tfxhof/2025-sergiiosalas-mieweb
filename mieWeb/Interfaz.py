@@ -37,6 +37,7 @@ page_selectors = pn.Column()
 # Diccionario para almacenar los valores de lambda, n y k para cada página
 material_data = {}
 
+
 # Variable to store the radius value
 radius_value = None
 
