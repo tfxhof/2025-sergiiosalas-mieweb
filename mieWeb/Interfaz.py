@@ -6,7 +6,9 @@ from refractivesqlite import dboperations as DB
 from Calculo import calculate_mie_arrays  # Import the function from Calculo.py
 
 # Ruta a la base de datos
-db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
+db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive2.db'
+
+
 
 # Función para conectar a la base de datos y obtener los nombres de los materiales y sus páginas
 def obtener_nombres_materiales():
@@ -158,7 +160,6 @@ layout = pn.Row(
         )
     )
 )
-
 
 
 
