@@ -1,25 +1,30 @@
 import numpy as np
 import miepython
-from Interfaz import material_data  # Import the material data from Interfaz
 
-def calculate_mie_arrays_single(page_id, radius):
-    valor_lambda_array, n_array, k_array = material_data[page_id]
+def calculate_mie_arrays(material_data, radius):
+    results = {}
 
-    # Calculo del índice complejo m y el parámetro x
+    # Extract lambda, n, and k arrays from material_data
+    lambda_array = material_data['lambda']
+    n_array = material_data['n']
+    k_array = material_data['k']
+
+    # Calculate the complex refractive index m and the size parameter x
     m = n_array - 1.0j * k_array
-    x = 2 * np.pi * radius / valor_lambda_array
+    x = 2 * np.pi * radius / lambda_array
 
-    # Calcular los parámetros usando la función de miepython
+    # Calculate the Mie scattering parameters using miepython
     qext, qsca, qback, g = miepython.mie(m, x)
 
-    # Coeficiente de absorción
+    # Absorption coefficient
     qabs = qext - qsca
 
-    return qext, qsca, qabs
+    # Store results in the dictionary
+    results = {
+        'qext': qext,
+        'qsca': qsca,
+        'qabs': qabs,
+        'page_id': material_data['page_id']
+    }
 
-# Ejemplo de uso
-material_id = 1  # ID del material
-radius = 0.1  # Radio de las partículas en micrómetros
-
-# Llamada a la función con los parámetros leídos de Interfaz
-qext, qsca, qabs = calculate_mie_arrays_single(material_id, radius)
+    return results
