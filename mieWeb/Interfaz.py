@@ -159,6 +159,9 @@ layout = pn.Row(
     )
 )
 
+
+
+
 # Mostrar el layout
 pn.extension()
 layout.show()
