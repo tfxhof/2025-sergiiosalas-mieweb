@@ -10,7 +10,7 @@ def calculate_mie_arrays(material_data, radius):
     k_array = material_data['k']
 
     # Calculate the complex refractive index m and the size parameter x
-    m = n_array - 1.0j * k_array
+    m = n_array - 1.0j * k_array  ## /n que sea positivo
     x = 2 * np.pi * radius / lambda_array
 
     # Calculate the Mie scattering parameters using miepython
