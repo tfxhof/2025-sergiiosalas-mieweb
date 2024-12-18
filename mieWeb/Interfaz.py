@@ -1,11 +1,15 @@
 import io
 import sqlite3
 import panel as pn
-import matplotlib.pyplot as plt
-import pylab as p
+from bokeh.plotting import figure
+from bokeh.models import HoverTool, LegendItem
+from bokeh.io import output_notebook
+
 
 from refractivesqlite import dboperations as DB
 from Calculo import calculate_mie_arrays  # Import the function from Calculo.py
+from bokeh.palettes import Category10
+from bokeh.models import Legend
 
 # Ruta a la base de datos
 db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
@@ -51,41 +55,56 @@ radius_value = None
 # Variable para almacenar el n del medio
 n_surrounding_value = 1.0  # Valor predeterminado
 
-# Crear un gráfico de Matplotlib adaptable
-fig, ax = plt.subplots()
-ax.set_xlabel('Wavelength (nm)')
-ax.set_ylabel('qext')
-plot_pane = pn.pane.Matplotlib(
-    fig,
-    sizing_mode="stretch_width",
-    min_height=600,
-    min_width= 500,
-    max_width = 700,
+# Initialize Bokeh output
+output_notebook()
+
+
+# Create a Bokeh figure with fixed dimensions
+plot = figure(
+    title="Gráfica interactiva con Zoom y Hover",
+    x_axis_label='Wavelength (nm)',
+    y_axis_label='qext',
+    tools="pan,box_zoom,reset,hover",
+    tooltips=[("Wavelength", "@x"), ("Value", "@y")],
+    width=500,  # Fixed width
+    height=500  # Fixed height
 )
+
+
+def actualizar_plot():
+    plot.renderers = []  # Clear previous renderers
+    plot.yaxis.axis_label = plot_option.value  # Update y-axis label
+
+    if radius_value is None:
+        return
+
+    colors = Category10[10]  # Use a color palette with 10 colors
+    color_index = 0
+    legend_items = []
+
+    for material_name, data in material_data.items():
+        results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
+        x = data['lambda']
+        y = results[plot_option.value]
+        color = colors[color_index % len(colors)]  # Cycle through colors
+        line = plot.line(x, y, line_width=2, color=color)
+        legend_items.append(LegendItem(label=f'{plot_option.value} {material_name}', renderers=[line]))
+        color_index += 1
+
+    # Crear la leyenda y añadirla a la gráfica
+    legend = Legend(items=legend_items, location="top_right")  # Ajusta la ubicación de la leyenda
+    plot.add_layout(legend, 'center')  # 'center' coloca la leyenda sobre la gráfica
+
+# Crear el contenedor para la gráfica sin leyenda
+plot_pane = pn.pane.Bokeh(plot, sizing_mode="stretch_both", min_height=400, min_width=400, max_height=50, max_width=500)
 
 # Añadimos un RadioButtonGroup para seleccionar qué graficar
 plot_option = pn.widgets.RadioBoxGroup(
     name='Seleccionar métrica a graficar',
     options=['qext', 'qsca', 'qabs'],
     value='qext',  # Valor predeterminado
-    inline = True
+    inline=True
 )
-
-# Función para actualizar el gráfico
-def actualizar_plot():
-    ax.clear()
-    ax.set_xlabel('Wavelength')
-    ax.set_ylabel(plot_option.value)  # Actualizar la etiqueta del eje Y con la opción seleccionada
-
-    if radius_value is None:
-        plot_pane.object = fig
-        return
-
-    for material_name, data in material_data.items():
-        results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
-        ax.plot(data['lambda'], results[plot_option.value], label=f'{plot_option.value} {material_name}')
-    ax.legend()
-    plot_pane.object = fig
 
 # Conectar el RadioButtonGroup para actualizar la gráfica cuando se cambie la opción
 plot_option.param.watch(lambda event: actualizar_plot(), 'value')
@@ -107,7 +126,7 @@ radius_input = pn.widgets.TextInput(
     name='Radio (nm)',
     placeholder='Introduzca el valor del radio en nanómetros',
     ##sizing_mode="stretch_width"
-    width = 300,
+    width=300,
 )
 
 # Botón para confirmar el radio
@@ -115,7 +134,7 @@ confirm_radius_button = pn.widgets.Button(
     name='Confirmar radio',
     button_type='primary',
     ##sizing_mode="stretch_width",
-    width = 50
+    width=50
 )
 
 # Adjuntar la función store_radius al evento del botón
@@ -139,7 +158,7 @@ n_surrounding_input = pn.widgets.TextInput(
     placeholder='Introduzca el valor de n del medio',
     value='1',  # Valor predeterminado
     ##sizing_mode="stretch_width"
-    width = 300,
+    width=300,
 )
 
 # Botón para confirmar el n del medio
@@ -147,7 +166,7 @@ confirm_n_surrounding_button = pn.widgets.Button(
     name='Confirmar n del medio',
     button_type='primary',
     ##sizing_mode="stretch_width",
-    width = 50
+    width=50
 )
 
 # Adjuntar la función store_n_surrounding al evento del botón
@@ -176,7 +195,7 @@ def mostrar_seleccion(event):
                 options=opciones_paginas,
                 value='Seleccione página',
                 ##sizing_mode="stretch_width",
-                width = 200
+                width=200
             )
             page_selectors.append(page_selector)
 
@@ -214,7 +233,8 @@ multi_choice.param.watch(mostrar_seleccion, 'value')
 # Función de callback para la descarga de la gráfica
 def descargar_grafica():
     buffer = io.BytesIO()
-    fig.savefig(buffer, format='png')
+    plot.output_backend = "png"
+    plot.save(buffer)
     buffer.seek(0)
     return buffer
 
@@ -267,11 +287,10 @@ layout = pn.Row(
                 plot_pane,  # Gráfica
             ),
         ),
-        max_width=700  # Ancho fijo para esta columna
+        max_width=1000 # Ancho fijo para esta columna
     ),
     sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
 )
-
 
 # Mostrar el layout
 pn.extension()
