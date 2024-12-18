@@ -7,6 +7,7 @@ from bokeh.io import output_notebook, export, export_svg
 from reportlab.graphics import renderPDF
 from reportlab.lib.pagesizes import letter
 from svglib import svglib
+from svglib.svglib import svg2rlg
 
 from refractivesqlite import dboperations as DB
 from Calculo import calculate_mie_arrays  # Import the function from Calculo.py
@@ -17,6 +18,8 @@ from bokeh.plotting import figure, output_file, save
 import chromedriver_autoinstaller
 from bokeh.io.export import export_svgs
 from selenium import webdriver
+import tempfile
+import zipfile
 
 # Ruta a la base de datos
 db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
@@ -230,27 +233,16 @@ def mostrar_seleccion(event):
 multi_choice.param.watch(mostrar_seleccion, 'value')
 
 
-##funcion para descargar la gráfica como pdf
-def descargar_pdf():
-    # Exportar la gráfica a un archivo SVG
-    svg_filename = "plot.svg"
-    export_svgs(plot_pane, filename=svg_filename)
-    # Convertir el archivo SVG a PDF
-    drawing = svglib.svg2rlg(svg_filename)
-    pdf_filename = "plot.pdf"
-    renderPDF.drawToFile(drawing, pdf_filename)
-    # Mostrar un mensaje de éxito
-    error_message.object = f"Gráfica exportada como {pdf_filename}."
+# Crear un botón para descargar la gráfica como PDF
+download_button_pdf = pn.widgets.Button(
+    name="Descargar como PDF",
+    button_type="primary",
+    width=200
+)
 
-
-# Crear un botón de descarga para el PDF
-download_button_pdf = pn.widgets.Button(name="Descargar PDF", button_type='primary')
-download_button_pdf.on_click(lambda event: descargar_pdf())
-
-
-import tempfile
-import zipfile
-
+# Función para manejar la descarga de la gráfica en formato PDF
+def descargar_pdf(event):
+    pass
 
 def descargar_txt():
     try:
