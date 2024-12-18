@@ -48,6 +48,9 @@ material_data = {}
 # Variable para almacenar el radio
 radius_value = None
 
+# Variable para almacenar el n del medio
+n_surrounding_value = 1.0  # Valor predeterminado
+
 # Crear un gráfico de Matplotlib adaptable
 fig, ax = plt.subplots()
 ax.set_xlabel('Wavelength')
@@ -68,7 +71,7 @@ def actualizar_plot():
     ax.set_xlabel('Wavelength')
     ax.set_ylabel('qext')
     for material_name, data in material_data.items():
-        results = calculate_mie_arrays(data, float(radius_value))
+        results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
         ax.plot(data['lambda'], results['qext'], label=f'qext {material_name}')
     ax.legend()
     plot_pane.object = fig
@@ -94,18 +97,50 @@ radius_input = pn.widgets.TextInput(
 )
 
 # Botón para confirmar el radio
-confirm_button = pn.widgets.Button(
+confirm_radius_button = pn.widgets.Button(
     name='Confirmar radio',
     button_type='primary',
     ##sizing_mode="stretch_width",
     width = 50
 )
 
+# Adjuntar la función store_radius al evento del botón
+confirm_radius_button.on_click(store_radius)
+
+# Función para manejar la entrada del n del medio
+def store_n_surrounding(event):
+    global n_surrounding_value
+    try:
+        n_surrounding_value = float(n_surrounding_input.value) if n_surrounding_input.value else 1.0
+        if n_surrounding_value <= 0:
+            raise ValueError("El valor de n del medio debe ser mayor que 0.")
+        actualizar_plot()
+        error_message.object = ""
+    except ValueError:
+        error_message.object = "Error: Ingrese un valor válido para el n del medio."
+
+# Crear una entrada de texto para el n del medio
+n_surrounding_input = pn.widgets.TextInput(
+    name='n del medio',
+    placeholder='Introduzca el valor de n del medio',
+    value='1',  # Valor predeterminado
+    ##sizing_mode="stretch_width"
+    width = 300,
+)
+
+# Botón para confirmar el n del medio
+confirm_n_surrounding_button = pn.widgets.Button(
+    name='Confirmar n del medio',
+    button_type='primary',
+    ##sizing_mode="stretch_width",
+    width = 50
+)
+
+# Adjuntar la función store_n_surrounding al evento del botón
+confirm_n_surrounding_button.on_click(store_n_surrounding)
+
 # Mensaje de error
 error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
-
-# Adjuntar la función store_radius al evento del botón
-confirm_button.on_click(store_radius)
 
 # Función que se ejecuta cuando el usuario selecciona materiales
 def mostrar_seleccion(event):
@@ -190,27 +225,31 @@ layout = pn.Row(
         pn.Row(
             radius_input,  # Entrada para el radio
             pn.Column(  # Usamos un Column para aplicar un espaciado
-                confirm_button,  # Botón para confirmar el radio
+                confirm_radius_button,  # Botón para confirmar el radio
                 sizing_mode='fixed',  # Tamaño fijo para que el botón no estire
                 margin=(16, 0, 0, 0)  # Eliminar márgenes adicionales
             ),
         ),
-        pn.Row (
+        pn.Row(
+            n_surrounding_input,  # Entrada para el n del medio
+            pn.Column(  # Usamos un Column para aplicar un espaciado
+                confirm_n_surrounding_button,  # Botón para confirmar el n del medio
+                sizing_mode='fixed',  # Tamaño fijo para que el botón no estire
+                margin=(16, 0, 0, 0)  # Eliminar márgenes adicionales
+            ),
+        ),
+        pn.Row(
             error_message,  # Mensaje de error
         ),
-
-        pn.Column (
+        pn.Column(
             pn.Row(  # Usamos un Column para aplicar un espaciado
                 download_button,  # Botón de descarga
-                align = 'center',
+                align='center',
             ),
-
             pn.Row(
                 plot_pane,  # Gráfica
             ),
         ),
-
-
         max_width=700  # Ancho fijo para esta columna
     ),
     sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
