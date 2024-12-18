@@ -53,7 +53,7 @@ n_surrounding_value = 1.0  # Valor predeterminado
 
 # Crear un gráfico de Matplotlib adaptable
 fig, ax = plt.subplots()
-ax.set_xlabel('Wavelength')
+ax.set_xlabel('Wavelength (nm)')
 ax.set_ylabel('qext')
 plot_pane = pn.pane.Matplotlib(
     fig,
@@ -63,18 +63,32 @@ plot_pane = pn.pane.Matplotlib(
     max_width = 700,
 )
 
+# Añadimos un RadioButtonGroup para seleccionar qué graficar
+plot_option = pn.widgets.RadioBoxGroup(
+    name='Seleccionar métrica a graficar',
+    options=['qext', 'qsca', 'qabs'],
+    value='qext',  # Valor predeterminado
+    inline = True
+)
+
 # Función para actualizar el gráfico
 def actualizar_plot():
-    if radius_value is None:
-        return
     ax.clear()
     ax.set_xlabel('Wavelength')
-    ax.set_ylabel('qext')
+    ax.set_ylabel(plot_option.value)  # Actualizar la etiqueta del eje Y con la opción seleccionada
+
+    if radius_value is None:
+        plot_pane.object = fig
+        return
+
     for material_name, data in material_data.items():
         results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
-        ax.plot(data['lambda'], results['qext'], label=f'qext {material_name}')
+        ax.plot(data['lambda'], results[plot_option.value], label=f'{plot_option.value} {material_name}')
     ax.legend()
     plot_pane.object = fig
+
+# Conectar el RadioButtonGroup para actualizar la gráfica cuando se cambie la opción
+plot_option.param.watch(lambda event: actualizar_plot(), 'value')
 
 # Función para manejar la entrada del radio
 def store_radius(event):
@@ -90,8 +104,8 @@ def store_radius(event):
 
 # Crear una entrada de texto para el radio
 radius_input = pn.widgets.TextInput(
-    name='Radio',
-    placeholder='Introduzca el valor del radio en micrómetros',
+    name='Radio (nm)',
+    placeholder='Introduzca el valor del radio en nanómetros',
     ##sizing_mode="stretch_width"
     width = 300,
 )
@@ -212,7 +226,7 @@ download_button = pn.widgets.FileDownload(
     ##sizing_mode="stretch_width"
 )
 
-# Crear el layout ajustado sin `spacing`
+# Actualizar el layout para incluir el RadioButtonGroup encima de la gráfica
 layout = pn.Row(
     # Columna izquierda: Selector de materiales y páginas
     pn.Column(
@@ -242,7 +256,10 @@ layout = pn.Row(
             error_message,  # Mensaje de error
         ),
         pn.Column(
-            pn.Row(  # Usamos un Column para aplicar un espaciado
+              # Añadir el RadioButtonGroup para seleccionar la métrica
+            pn.Row(
+                plot_option,
+                # Usamos un Column para aplicar un espaciado
                 download_button,  # Botón de descarga
                 align='center',
             ),
@@ -254,6 +271,7 @@ layout = pn.Row(
     ),
     sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
 )
+
 
 # Mostrar el layout
 pn.extension()
