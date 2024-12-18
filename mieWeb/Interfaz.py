@@ -61,7 +61,6 @@ output_notebook()
 
 # Create a Bokeh figure with fixed dimensions
 plot = figure(
-    title="Gráfica interactiva con Zoom y Hover",
     x_axis_label='Wavelength (nm)',
     y_axis_label='qext',
     tools="pan,box_zoom,reset,hover",
