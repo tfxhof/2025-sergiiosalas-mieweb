@@ -2,14 +2,21 @@ import io
 import sqlite3
 import panel as pn
 from bokeh.plotting import figure
-from bokeh.models import HoverTool, LegendItem
-from bokeh.io import output_notebook
-
+from bokeh.models import HoverTool, LegendItem, canvas
+from bokeh.io import output_notebook, export, export_svg
+from reportlab.graphics import renderPDF
+from reportlab.lib.pagesizes import letter
+from svglib import svglib
 
 from refractivesqlite import dboperations as DB
 from Calculo import calculate_mie_arrays  # Import the function from Calculo.py
 from bokeh.palettes import Category10
 from bokeh.models import Legend
+from bokeh.io.export import export_svgs
+from bokeh.plotting import figure, output_file, save
+import chromedriver_autoinstaller
+from bokeh.io.export import export_svgs
+from selenium import webdriver
 
 # Ruta a la base de datos
 db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
@@ -39,8 +46,7 @@ multi_choice = pn.widgets.MultiChoice(
     name="Seleccionar Materiales",
     options=nombres_materiales,
     width=350,
-    placeholder="Seleccione los materiales que desee",
-    ##sizing_mode="stretch_width"
+    placeholder="Seleccione los materiales que desee"
 )
 
 # Contenedor para los widgets de selección de páginas
@@ -58,7 +64,6 @@ n_surrounding_value = 1.0  # Valor predeterminado
 # Initialize Bokeh output
 output_notebook()
 
-
 # Create a Bokeh figure with fixed dimensions
 plot = figure(
     x_axis_label='Wavelength (nm)',
@@ -68,7 +73,6 @@ plot = figure(
     width=500,  # Fixed width
     height=500  # Fixed height
 )
-
 
 def actualizar_plot():
     plot.renderers = []  # Clear previous renderers
@@ -124,15 +128,13 @@ def store_radius(event):
 radius_input = pn.widgets.TextInput(
     name='Radio (nm)',
     placeholder='Introduzca el valor del radio en nanómetros',
-    ##sizing_mode="stretch_width"
-    width=300,
+    width=300
 )
 
 # Botón para confirmar el radio
 confirm_radius_button = pn.widgets.Button(
     name='Confirmar radio',
     button_type='primary',
-    ##sizing_mode="stretch_width",
     width=50
 )
 
@@ -156,15 +158,13 @@ n_surrounding_input = pn.widgets.TextInput(
     name='n del medio',
     placeholder='Introduzca el valor de n del medio',
     value='1',  # Valor predeterminado
-    ##sizing_mode="stretch_width"
-    width=300,
+    width=300
 )
 
 # Botón para confirmar el n del medio
 confirm_n_surrounding_button = pn.widgets.Button(
     name='Confirmar n del medio',
     button_type='primary',
-    ##sizing_mode="stretch_width",
     width=50
 )
 
@@ -193,7 +193,6 @@ def mostrar_seleccion(event):
                 name=f"Seleccionar página para {nombre}",
                 options=opciones_paginas,
                 value='Seleccione página',
-                ##sizing_mode="stretch_width",
                 width=200
             )
             page_selectors.append(page_selector)
@@ -217,7 +216,8 @@ def mostrar_seleccion(event):
                             'lambda': lambda_array,
                             'n': n_array,
                             'k': k_array,
-                            'page_id': page_id
+                            'page_id': page_id,
+                            'page_name': page_name
                         }
                     except Exception as e:
                         error_message.object = f"Error al seleccionar la página: {str(e)}"
@@ -229,21 +229,74 @@ def mostrar_seleccion(event):
 # Conectar la función mostrar_seleccion al multi-choice
 multi_choice.param.watch(mostrar_seleccion, 'value')
 
-# Función de callback para la descarga de la gráfica
-def descargar_grafica():
-    buffer = io.BytesIO()
-    plot.output_backend = "png"
-    plot.save(buffer)
-    buffer.seek(0)
-    return buffer
 
-# Botón de descarga para la gráfica
-download_button = pn.widgets.FileDownload(
-    filename='grafica.png',
-    callback=descargar_grafica,
+##funcion para descargar la gráfica como pdf
+def descargar_pdf():
+    # Exportar la gráfica a un archivo SVG
+    svg_filename = "plot.svg"
+    export_svgs(plot_pane, filename=svg_filename)
+    # Convertir el archivo SVG a PDF
+    drawing = svglib.svg2rlg(svg_filename)
+    pdf_filename = "plot.pdf"
+    renderPDF.drawToFile(drawing, pdf_filename)
+    # Mostrar un mensaje de éxito
+    error_message.object = f"Gráfica exportada como {pdf_filename}."
+
+
+# Crear un botón de descarga para el PDF
+download_button_pdf = pn.widgets.Button(name="Descargar PDF", button_type='primary')
+download_button_pdf.on_click(lambda event: descargar_pdf())
+
+
+import tempfile
+import zipfile
+
+
+def descargar_txt():
+    try:
+        # Crear un archivo ZIP temporal
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
+            with zipfile.ZipFile(tmp_zip, 'w') as zipf:
+                # Iterar sobre los materiales en la gráfica
+                for material_name, data in material_data.items():
+                    # Obtener los valores de lambda y los resultados de qext, qabs, y qsca
+                    lambda_values = data['lambda']
+                    results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
+                    qext_values = results['qext']
+                    qabs_values = results['qabs']
+                    qsca_values = results['qsca']
+
+                    page_name = material_data[material_name].get('page_name', 'Página desconocida')
+                    txt_content1 = f"Material: {material_name}\tPágina: {page_name}\n\n"
+
+                    # Crear el contenido del archivo TXT con columnas alineadas
+                    # Formateo con un ancho fijo de 30 caracteres por columna para acomodar números largos
+                    txt_content2 = "{:<30}{:<30}{:<30}{:<30}\n".format("lambda (nm)", "qext", "qabs", "qsca")
+                    for i in range(len(lambda_values)):
+                        txt_content2 += "{:<30.8f}{:<30.8f}{:<30.8f}{:<30.8f}\n".format(
+                            lambda_values[i], qext_values[i], qabs_values[i], qsca_values[i]
+                        )
+
+                    # Crear el nombre del archivo TXT
+                    txt_filename = f"{material_name}.txt"
+
+                    # Añadir el archivo TXT al ZIP
+                    zipf.writestr(txt_filename, txt_content1 + txt_content2)
+
+            # Establecer el nombre del archivo ZIP
+            zip_filename = tmp_zip.name
+
+        return zip_filename
+    except Exception as e:
+        error_message.object = f"Error al descargar los archivos TXT: {str(e)}"
+
+# Crear un botón de descarga para los archivos TXT
+download_button_txt = pn.widgets.FileDownload(
     button_type='primary',
-    ##sizing_mode="stretch_width"
+    callback=descargar_txt,
+    filename="materiales.zip"
 )
+
 
 # Actualizar el layout para incluir el RadioButtonGroup encima de la gráfica
 layout = pn.Row(
@@ -278,18 +331,22 @@ layout = pn.Row(
               # Añadir el RadioButtonGroup para seleccionar la métrica
             pn.Row(
                 plot_option,
+                download_button_pdf,
+                download_button_txt,
                 # Usamos un Column para aplicar un espaciado
-                download_button,  # Botón de descarga
-                align='center',
+                align='start',
             ),
             pn.Row(
                 plot_pane,  # Gráfica
             ),
         ),
-        max_width=1000 # Ancho fijo para esta columna
+        max_width=1000  # Ancho fijo para esta columna
     ),
     sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
 )
+
+# Inicializar la gráfica
+actualizar_plot()
 
 # Mostrar el layout
 pn.extension()
