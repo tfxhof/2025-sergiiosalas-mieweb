@@ -46,10 +46,10 @@ nombres_materiales, material_dict = obtener_nombres_materiales()
 
 # Crear un widget de selección múltiple con Panel
 multi_choice = pn.widgets.MultiChoice(
-    name="Seleccionar Materiales",
+    name="Select materials",
     options=nombres_materiales,
     width=350,
-    placeholder="Seleccione los materiales que desee"
+    placeholder="Select the materials you wish to compare"
 )
 
 # Contenedor para los widgets de selección de páginas
@@ -106,7 +106,7 @@ plot_pane = pn.pane.Bokeh(plot, sizing_mode="stretch_both", min_height=400, min_
 
 # Añadimos un RadioButtonGroup para seleccionar qué graficar
 plot_option = pn.widgets.RadioBoxGroup(
-    name='Seleccionar métrica a graficar',
+    name='Select metric to plot',
     options=['qext', 'qsca', 'qabs'],
     value='qext',  # Valor predeterminado
     inline=True
@@ -121,22 +121,22 @@ def store_radius(event):
     try:
         radius_value = float(radius_input.value)
         if radius_value <= 0:
-            raise ValueError("El valor del radio debe ser mayor que 0.")
+            raise ValueError("Radius value must be greater than 0")
         actualizar_plot()
         error_message.object = ""
     except ValueError:
-        error_message.object = "Error: Ingrese un valor válido para el radio."
+        error_message.object = "Error: Introduce a valid value for radius"
 
 # Crear una entrada de texto para el radio
 radius_input = pn.widgets.TextInput(
-    name='Radio (nm)',
-    placeholder='Introduzca el valor del radio en nanómetros',
+    name='Radius (nm)',
+    placeholder='Enter the radius value in nanometers',
     width=300
 )
 
 # Botón para confirmar el radio
 confirm_radius_button = pn.widgets.Button(
-    name='Confirmar radio',
+    name='Confirm radius',
     button_type='primary',
     width=50
 )
@@ -150,23 +150,23 @@ def store_n_surrounding(event):
     try:
         n_surrounding_value = float(n_surrounding_input.value) if n_surrounding_input.value else 1.0
         if n_surrounding_value <= 0:
-            raise ValueError("El valor de n del medio debe ser mayor que 0.")
+            raise ValueError("The value of the refractive index of the medium must be greater than 0")
         actualizar_plot()
         error_message.object = ""
     except ValueError:
-        error_message.object = "Error: Ingrese un valor válido para el n del medio."
+        error_message.object = "Error: Enter a valid value for the refractive index of the medium"
 
 # Crear una entrada de texto para el n del medio
 n_surrounding_input = pn.widgets.TextInput(
-    name='n del medio',
-    placeholder='Introduzca el valor de n del medio',
+    name='Refractive index of the medium',
+    placeholder='Enter value',
     value='1',  # Valor predeterminado
     width=300
 )
 
 # Botón para confirmar el n del medio
 confirm_n_surrounding_button = pn.widgets.Button(
-    name='Confirmar n del medio',
+    name='Confirm value',
     button_type='primary',
     width=50
 )
@@ -181,27 +181,27 @@ error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 def mostrar_seleccion(event):
     seleccionados = set(event.new)
     for widget in list(page_selectors):
-        if widget.name.split(" para ")[1] not in seleccionados:
+        if widget.name.split(" for ")[1] not in seleccionados:
             page_selectors.remove(widget)
-            material_data.pop(widget.name.split(" para ")[1], None)
+            material_data.pop(widget.name.split(" for ")[1], None)
     for nombre in seleccionados:
-        if not any(widget.name.split(" para ")[1] == nombre for widget in page_selectors):
+        if not any(widget.name.split(" for ")[1] == nombre for widget in page_selectors):
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("SELECT pageid, page FROM pages WHERE book = ?", (nombre,))
             paginas = cursor.fetchall()
             conn.close()
-            opciones_paginas = ['Seleccione página'] + [pagina[1] for pagina in paginas]
+            opciones_paginas = ['Select page'] + [pagina[1] for pagina in paginas]
             page_selector = pn.widgets.Select(
-                name=f"Seleccionar página para {nombre}",
+                name=f"Select page for {nombre}",
                 options=opciones_paginas,
-                value='Seleccione página',
+                value='Select page',
                 width=200
             )
             page_selectors.append(page_selector)
 
             def actualizar_valores(event, nombre=nombre):
-                if event.new == 'Seleccione página':
+                if event.new == 'Select page':
                     material_data.pop(nombre, None)
                 else:
                     page_name = event.new
@@ -223,7 +223,7 @@ def mostrar_seleccion(event):
                             'page_name': page_name
                         }
                     except Exception as e:
-                        error_message.object = f"Error al seleccionar la página: {str(e)}"
+                        error_message.object = f"Error: {str(e)}"
                 actualizar_plot()
 
             page_selector.param.watch(actualizar_valores, 'value')
@@ -235,7 +235,7 @@ multi_choice.param.watch(mostrar_seleccion, 'value')
 
 # Crear un botón para descargar la gráfica como PDF
 download_button_pdf = pn.widgets.Button(
-    name="Descargar como PDF",
+    name="Download as PDF",
     button_type="primary",
     width=200
 )
@@ -258,7 +258,7 @@ def descargar_txt():
                     qabs_values = results['qabs']
                     qsca_values = results['qsca']
 
-                    page_name = material_data[material_name].get('page_name', 'Página desconocida')
+                    page_name = material_data[material_name].get('page_name', 'Unknown page')
 
                     # Crear el contenido del archivo TXT con columnas alineadas
                     # Formateo con un ancho fijo de 30 caracteres por columna para acomodar números largos
@@ -279,13 +279,13 @@ def descargar_txt():
 
         return zip_filename
     except Exception as e:
-        error_message.object = f"Error al descargar los archivos TXT: {str(e)}"
+        error_message.object = f"Error: {str(e)}"
 
 # Crear un botón de descarga para los archivos TXT
 download_button_txt = pn.widgets.FileDownload(
     button_type='primary',
     callback=descargar_txt,
-    filename="materiales.zip"
+    filename="materials.zip"
 )
 
 
