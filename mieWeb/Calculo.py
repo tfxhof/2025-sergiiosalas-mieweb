@@ -5,7 +5,7 @@ def calculate_mie_arrays(material_data, radius, n_surrounding):
     results = {}
 
     # Extract lambda, n, and k arrays from material_data
-    lambda_array = material_data['lambda']
+    lambda_array = material_data['lambda']  # Convert to nm
     n_array = material_data['n']
     k_array = material_data['k']
 

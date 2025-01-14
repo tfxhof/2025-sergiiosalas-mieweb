@@ -216,7 +216,7 @@ def mostrar_seleccion(event):
                         n_array = db.get_material_n_numpy(page_id)[:, 1]
                         k_array = db.get_material_k_numpy(page_id)[:, 1]
                         material_data[nombre] = {
-                            'lambda': lambda_array,
+                            'lambda': lambda_array * 1000,  # Convertir a nm
                             'n': n_array,
                             'k': k_array,
                             'page_id': page_id,
@@ -252,28 +252,27 @@ def descargar_txt():
                 # Iterar sobre los materiales en la gráfica
                 for material_name, data in material_data.items():
                     # Obtener los valores de lambda y los resultados de qext, qabs, y qsca
-                    lambda_values = data['lambda']
+                    lambda_values = data['lambda']  # Convertir a nm
                     results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
                     qext_values = results['qext']
                     qabs_values = results['qabs']
                     qsca_values = results['qsca']
 
                     page_name = material_data[material_name].get('page_name', 'Página desconocida')
-                    txt_content1 = f"Material: {material_name}\tPágina: {page_name}\n\n"
 
                     # Crear el contenido del archivo TXT con columnas alineadas
                     # Formateo con un ancho fijo de 30 caracteres por columna para acomodar números largos
-                    txt_content2 = "{:<30}{:<30}{:<30}{:<30}\n".format("lambda (nm)", "qext", "qabs", "qsca")
+                    txt_content1 = "{:<30}{:<30}{:<30}{:<30}\n".format("lambda_nm", "qext", "qabs", "qsca")
                     for i in range(len(lambda_values)):
-                        txt_content2 += "{:<30.8f}{:<30.8f}{:<30.8f}{:<30.8f}\n".format(
+                        txt_content1 += "{:<30.8f}{:<30.8f}{:<30.8f}{:<30.8f}\n".format(
                             lambda_values[i], qext_values[i], qabs_values[i], qsca_values[i]
                         )
 
                     # Crear el nombre del archivo TXT
-                    txt_filename = f"{material_name}.txt"
+                    txt_filename = f"{material_name}_{page_name}.txt"
 
                     # Añadir el archivo TXT al ZIP
-                    zipf.writestr(txt_filename, txt_content1 + txt_content2)
+                    zipf.writestr(txt_filename, txt_content1)
 
             # Establecer el nombre del archivo ZIP
             zip_filename = tmp_zip.name
