@@ -88,6 +88,9 @@ def actualizar_plot():
     color_index = 0
     legend_items = []
 
+    # Eliminar las leyendas existentes
+    plot.legend.items = []
+
     for material_name, data in material_data.items():
         results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
         x = data['lambda']
@@ -181,9 +184,11 @@ error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 def mostrar_seleccion(event):
     seleccionados = set(event.new)
     for widget in list(page_selectors):
-        if widget.name.split(" for ")[1] not in seleccionados:
-            page_selectors.remove(widget)
-            material_data.pop(widget.name.split(" for ")[1], None)
+        nombre_material = widget.name.split(" for ")[1]
+        if nombre_material not in seleccionados:  # Si el material fue deseleccionado
+            page_selectors.remove(widget)  # Eliminar el selector de página
+            material_data.pop(nombre_material, None)  # Eliminar el material de `material_data`
+
     for nombre in seleccionados:
         if not any(widget.name.split(" for ")[1] == nombre for widget in page_selectors):
             conn = sqlite3.connect(db_path)
