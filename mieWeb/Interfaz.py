@@ -1,6 +1,7 @@
 import io
 import sqlite3
 import panel as pn
+import self
 from bokeh.plotting import figure
 from bokeh.models import HoverTool, LegendItem, canvas
 from bokeh.io import output_notebook, export, export_svg
@@ -9,7 +10,8 @@ from reportlab.lib.pagesizes import letter
 from svglib import svglib
 from svglib.svglib import svg2rlg
 
-from refractivesqlite import dboperations as DB
+from Descarga import descargar_txt
+from AccesoDatos import obtener_nombres_materiales
 from Calculo import calculate_mie_arrays  # Import the function from Calculo.py
 from bokeh.palettes import Category10
 from bokeh.models import Legend
@@ -21,28 +23,9 @@ from selenium import webdriver
 import tempfile
 import zipfile
 
-# Ruta a la base de datos
-db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
-
-# Función para conectar a la base de datos y obtener los nombres de los materiales y sus páginas
-def obtener_nombres_materiales():
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT pageid, book FROM pages")
-    materiales = cursor.fetchall()
-    conn.close()
-    nombres_vistos = set()
-    material_dict = {}
-    for material in materiales:
-        pageid, nombre = material
-        if nombre not in nombres_vistos:
-            material_dict[nombre] = pageid
-            nombres_vistos.add(nombre)
-    nombres_unicos = sorted(material_dict.keys())
-    return nombres_unicos, material_dict
-
-# Obtener los nombres de los materiales y el diccionario de materiales
-nombres_materiales, material_dict = obtener_nombres_materiales()
+from refractivesqlite import dboperations as DB
+from Gestion import nombres_materiales, material_data, material_dict, radius_value, n_surrounding_value, error_message, \
+    actualizar_plot, mostrar_seleccion
 
 # Crear un widget de selección múltiple con Panel
 multi_choice = pn.widgets.MultiChoice(
@@ -55,14 +38,6 @@ multi_choice = pn.widgets.MultiChoice(
 # Contenedor para los widgets de selección de páginas
 page_selectors = pn.Column(sizing_mode="stretch_width")
 
-# Diccionario para almacenar los valores de lambda, n y k para cada página
-material_data = {}
-
-# Variable para almacenar el radio
-radius_value = None
-
-# Variable para almacenar el n del medio
-n_surrounding_value = 1.0  # Valor predeterminado
 
 # Initialize Bokeh output
 output_notebook()
@@ -77,33 +52,6 @@ plot = figure(
     height=500  # Fixed height
 )
 
-def actualizar_plot():
-    plot.renderers = []  # Clear previous renderers
-    plot.yaxis.axis_label = plot_option.value  # Update y-axis label
-
-    if radius_value is None:
-        return
-
-    colors = Category10[10]  # Use a color palette with 10 colors
-    color_index = 0
-    legend_items = []
-
-    # Eliminar las leyendas existentes
-    plot.legend.items = []
-
-    for material_name, data in material_data.items():
-        results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
-        x = data['lambda']
-        y = results[plot_option.value]
-        color = colors[color_index % len(colors)]  # Cycle through colors
-        line = plot.line(x, y, line_width=2, color=color)
-        legend_items.append(LegendItem(label=f'{plot_option.value} {material_name}', renderers=[line]))
-        color_index += 1
-
-    # Crear la leyenda y añadirla a la gráfica
-    legend = Legend(items=legend_items, location="top_right")  # Ajusta la ubicación de la leyenda
-    plot.add_layout(legend, 'center')  # 'center' coloca la leyenda sobre la gráfica
-
 # Crear el contenedor para la gráfica sin leyenda
 plot_pane = pn.pane.Bokeh(plot, sizing_mode="stretch_both", min_height=400, min_width=400, max_height=50, max_width=500)
 
@@ -116,7 +64,10 @@ plot_option = pn.widgets.RadioBoxGroup(
 )
 
 # Conectar el RadioButtonGroup para actualizar la gráfica cuando se cambie la opción
-plot_option.param.watch(lambda event: actualizar_plot(), 'value')
+plot_option.param.watch(lambda event: actualizar_plot(plot, plot_option, radius_value), 'value')
+
+
+
 
 # Función para manejar la entrada del radio
 def store_radius(event):
@@ -125,7 +76,7 @@ def store_radius(event):
         radius_value = float(radius_input.value)
         if radius_value <= 0:
             raise ValueError("Radius value must be greater than 0")
-        actualizar_plot()
+        actualizar_plot(plot, plot_option, radius_value)
         error_message.object = ""
     except ValueError:
         error_message.object = "Error: Introduce a valid value for radius"
@@ -144,6 +95,8 @@ confirm_radius_button = pn.widgets.Button(
     width=50
 )
 
+
+
 # Adjuntar la función store_radius al evento del botón
 confirm_radius_button.on_click(store_radius)
 
@@ -154,7 +107,7 @@ def store_n_surrounding(event):
         n_surrounding_value = float(n_surrounding_input.value) if n_surrounding_input.value else 1.0
         if n_surrounding_value <= 0:
             raise ValueError("The value of the refractive index of the medium must be greater than 0")
-        actualizar_plot()
+        actualizar_plot(plot, plot_option, radius_value)
         error_message.object = ""
     except ValueError:
         error_message.object = "Error: Enter a valid value for the refractive index of the medium"
@@ -174,70 +127,6 @@ confirm_n_surrounding_button = pn.widgets.Button(
     width=50
 )
 
-# Adjuntar la función store_n_surrounding al evento del botón
-confirm_n_surrounding_button.on_click(store_n_surrounding)
-
-# Mensaje de error
-error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
-
-# Función que se ejecuta cuando el usuario selecciona materiales
-def mostrar_seleccion(event):
-    seleccionados = set(event.new)
-    for widget in list(page_selectors):
-        nombre_material = widget.name.split(" for ")[1]
-        if nombre_material not in seleccionados:  # Si el material fue deseleccionado
-            page_selectors.remove(widget)  # Eliminar el selector de página
-            material_data.pop(nombre_material, None)  # Eliminar el material de `material_data`
-
-    for nombre in seleccionados:
-        if not any(widget.name.split(" for ")[1] == nombre for widget in page_selectors):
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            cursor.execute("SELECT pageid, page FROM pages WHERE book = ?", (nombre,))
-            paginas = cursor.fetchall()
-            conn.close()
-            opciones_paginas = ['Select page'] + [pagina[1] for pagina in paginas]
-            page_selector = pn.widgets.Select(
-                name=f"Select page for {nombre}",
-                options=opciones_paginas,
-                value='Select page',
-                width=200
-            )
-            page_selectors.append(page_selector)
-
-            def actualizar_valores(event, nombre=nombre):
-                if event.new == 'Select page':
-                    material_data.pop(nombre, None)
-                else:
-                    page_name = event.new
-                    try:
-                        conn = sqlite3.connect(db_path)
-                        cursor = conn.cursor()
-                        cursor.execute("SELECT pageid FROM pages WHERE page = ? AND book = ?", (page_name, nombre))
-                        page_id = cursor.fetchone()[0]
-                        conn.close()
-                        db = DB.Database(db_path)
-                        lambda_array = db.get_material_n_numpy(page_id)[:, 0]
-                        n_array = db.get_material_n_numpy(page_id)[:, 1]
-                        k_array = db.get_material_k_numpy(page_id)[:, 1]
-                        material_data[nombre] = {
-                            'lambda': lambda_array * 1000,  # Convertir a nm
-                            'n': n_array,
-                            'k': k_array,
-                            'page_id': page_id,
-                            'page_name': page_name
-                        }
-                    except Exception as e:
-                        error_message.object = f"Error: {str(e)}"
-                actualizar_plot()
-
-            page_selector.param.watch(actualizar_valores, 'value')
-    actualizar_plot()
-
-# Conectar la función mostrar_seleccion al multi-choice
-multi_choice.param.watch(mostrar_seleccion, 'value')
-
-
 # Crear un botón para descargar la gráfica como PDF
 download_button_pdf = pn.widgets.Button(
     name="Download as PDF",
@@ -245,53 +134,24 @@ download_button_pdf = pn.widgets.Button(
     width=200
 )
 
-# Función para manejar la descarga de la gráfica en formato PDF
-def descargar_pdf(event):
-    pass
 
-def descargar_txt():
-    try:
-        # Crear un archivo ZIP temporal
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
-            with zipfile.ZipFile(tmp_zip, 'w') as zipf:
-                # Iterar sobre los materiales en la gráfica
-                for material_name, data in material_data.items():
-                    # Obtener los valores de lambda y los resultados de qext, qabs, y qsca
-                    lambda_values = data['lambda']  # Convertir a nm
-                    results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
-                    qext_values = results['qext']
-                    qabs_values = results['qabs']
-                    qsca_values = results['qsca']
 
-                    page_name = material_data[material_name].get('page_name', 'Unknown page')
-
-                    # Crear el contenido del archivo TXT con columnas alineadas
-                    # Formateo con un ancho fijo de 30 caracteres por columna para acomodar números largos
-                    txt_content1 = "{:<30}{:<30}{:<30}{:<30}\n".format("lambda_nm", "qext", "qabs", "qsca")
-                    for i in range(len(lambda_values)):
-                        txt_content1 += "{:<30.8f}{:<30.8f}{:<30.8f}{:<30.8f}\n".format(
-                            lambda_values[i], qext_values[i], qabs_values[i], qsca_values[i]
-                        )
-
-                    # Crear el nombre del archivo TXT
-                    txt_filename = f"{material_name}_{page_name}.txt"
-
-                    # Añadir el archivo TXT al ZIP
-                    zipf.writestr(txt_filename, txt_content1)
-
-            # Establecer el nombre del archivo ZIP
-            zip_filename = tmp_zip.name
-
-        return zip_filename
-    except Exception as e:
-        error_message.object = f"Error: {str(e)}"
-
-# Crear un botón de descarga para los archivos TXT
 download_button_txt = pn.widgets.FileDownload(
     button_type='primary',
-    callback=descargar_txt,
+    callback=lambda: descargar_txt(radius_value, n_surrounding_value),
     filename="materials.zip"
 )
+
+# Adjuntar la función store_n_surrounding al evento del botón
+confirm_n_surrounding_button.on_click(store_n_surrounding)
+
+
+
+# Conectar la función mostrar_seleccion al multi-choice
+multi_choice.param.watch(lambda event: mostrar_seleccion(event, page_selectors, plot, plot_option), 'value')
+
+
+
 
 
 # Actualizar el layout para incluir el RadioButtonGroup encima de la gráfica
@@ -342,7 +202,7 @@ layout = pn.Row(
 )
 
 # Inicializar la gráfica
-actualizar_plot()
+actualizar_plot(plot, plot_option, radius_value)
 
 # Mostrar el layout
 pn.extension()
