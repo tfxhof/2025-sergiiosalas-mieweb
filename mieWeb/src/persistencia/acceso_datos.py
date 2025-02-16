@@ -2,7 +2,7 @@ import sqlite3
 from refractivesqlite import dboperations as DB
 
 # Ruta a la base de datos
-db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
+db_path = './refractive.db'
 
 # Función para conectar a la base de datos y obtener los nombres de los materiales y sus páginas
 def obtener_nombres_materiales():

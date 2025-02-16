@@ -5,14 +5,8 @@ import self
 from bokeh.plotting import figure
 from bokeh.models import HoverTool, LegendItem, canvas
 from bokeh.io import output_notebook, export, export_svg
-from reportlab.graphics import renderPDF
-from reportlab.lib.pagesizes import letter
-from svglib import svglib
-from svglib.svglib import svg2rlg
 
-from Descarga import descargar_txt
-from AccesoDatos import obtener_nombres_materiales
-from Calculo import calculate_mie_arrays  # Import the function from Calculo.py
+
 from bokeh.palettes import Category10
 from bokeh.models import Legend
 from bokeh.io.export import export_svgs
@@ -24,8 +18,19 @@ import tempfile
 import zipfile
 
 from refractivesqlite import dboperations as DB
-from Gestion import nombres_materiales, material_data, material_dict, radius_value, n_surrounding_value, error_message, \
-    actualizar_plot, mostrar_seleccion
+
+
+from src.negocio.IPresenter import IPresenter
+from src.negocio.presenter import nombres_materiales, Presenter
+from src.presentacion.IView import IView
+from src.negocio import calculo, descarga
+
+class View(IView):
+    def __init__(self, presenter):
+        self.presenter = presenter  # Se guarda la instancia de Presenter
+
+
+presenter = Presenter(100)  # Se crea una instancia de Presenter
 
 # Crear un widget de selección múltiple con Panel
 multi_choice = pn.widgets.MultiChoice(
@@ -38,6 +43,8 @@ multi_choice = pn.widgets.MultiChoice(
 # Contenedor para los widgets de selección de páginas
 page_selectors = pn.Column(sizing_mode="stretch_width")
 
+# Mensaje de error
+error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 
 # Initialize Bokeh output
 output_notebook()
@@ -64,19 +71,43 @@ plot_option = pn.widgets.RadioBoxGroup(
 )
 
 # Conectar el RadioButtonGroup para actualizar la gráfica cuando se cambie la opción
-plot_option.param.watch(lambda event: actualizar_plot(plot, plot_option, radius_value), 'value')
+plot_option.param.watch(lambda event: actualizar_plot(), 'value')
 
+def actualizar_plot():
+    plot.renderers = []  # Clear previous renderers
+    plot.yaxis.axis_label = plot_option.value  # Update y-axis label
 
+    if Presenter.radius_value is None:
+        return
+
+    colors = Category10[10]  # Use a color palette with 10 colors
+    color_index = 0
+    legend_items = []
+
+    # Eliminar las leyendas existentes
+    plot.legend.items = []
+
+    for material_name, data in Presenter.material_data.items():
+        results = calculo.calculate_mie_arrays(data, float(Presenter.radius_value), float(Presenter.n_surrounding_value))
+        x = data['lambda']
+        y = results[plot_option.value]
+        color = colors[color_index % len(colors)]  # Cycle through colors
+        line = plot.line(x, y, line_width=2, color=color)
+        legend_items.append(LegendItem(label=f'{plot_option.value} {material_name}', renderers=[line]))
+        color_index += 1
+
+    # Crear la leyenda y añadirla a la gráfica
+    legend = Legend(items=legend_items, location="top_right")  # Ajusta la ubicación de la leyenda
+    plot.add_layout(legend, 'center')  # 'center' coloca la leyenda sobre la gráfica
 
 
 # Función para manejar la entrada del radio
 def store_radius(event):
-    global radius_value
     try:
-        radius_value = float(radius_input.value)
-        if radius_value <= 0:
+        Presenter.radius_value = float(radius_input.value)
+        if Presenter.radius_value <= 0:
             raise ValueError("Radius value must be greater than 0")
-        actualizar_plot(plot, plot_option, radius_value)
+        actualizar_plot()
         error_message.object = ""
     except ValueError:
         error_message.object = "Error: Introduce a valid value for radius"
@@ -102,12 +133,11 @@ confirm_radius_button.on_click(store_radius)
 
 # Función para manejar la entrada del n del medio
 def store_n_surrounding(event):
-    global n_surrounding_value
     try:
-        n_surrounding_value = float(n_surrounding_input.value) if n_surrounding_input.value else 1.0
-        if n_surrounding_value <= 0:
+        Presenter.n_surrounding_value = float(n_surrounding_input.value) if n_surrounding_input.value else 1.0
+        if Presenter.n_surrounding_value <= 0:
             raise ValueError("The value of the refractive index of the medium must be greater than 0")
-        actualizar_plot(plot, plot_option, radius_value)
+        actualizar_plot()
         error_message.object = ""
     except ValueError:
         error_message.object = "Error: Enter a valid value for the refractive index of the medium"
@@ -138,7 +168,7 @@ download_button_pdf = pn.widgets.Button(
 
 download_button_txt = pn.widgets.FileDownload(
     button_type='primary',
-    callback=lambda: descargar_txt(radius_value, n_surrounding_value),
+    callback=lambda: descarga.descargar_txt(Presenter.radius_value, Presenter.n_surrounding_value),
     filename="materials.zip"
 )
 
@@ -148,9 +178,7 @@ confirm_n_surrounding_button.on_click(store_n_surrounding)
 
 
 # Conectar la función mostrar_seleccion al multi-choice
-multi_choice.param.watch(lambda event: mostrar_seleccion(event, page_selectors, plot, plot_option), 'value')
-
-
+multi_choice.param.watch(lambda event: IPresenter.mostrar_seleccion(event, page_selectors, plot, plot_option), 'value')
 
 
 
@@ -201,8 +229,10 @@ layout = pn.Row(
     sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
 )
 
+
+
 # Inicializar la gráfica
-actualizar_plot(plot, plot_option, radius_value)
+actualizar_plot()
 
 # Mostrar el layout
 pn.extension()

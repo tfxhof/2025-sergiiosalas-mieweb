@@ -1,13 +1,19 @@
 import sqlite3
 
 import panel as pn
-from bokeh.models import LegendItem
-from bokeh.palettes import Category10
-from bokeh.models import Legend
-
-from AccesoDatos import obtener_nombres_materiales
-from Calculo import calculate_mie_arrays
+# Import the function from AccesoDatos.py
 from refractivesqlite import dboperations as DB
+from src.persistencia.acceso_datos import obtener_nombres_materiales
+from src.negocio.IPresenter import IPresenter
+from src.presentacion.IView import IView
+
+
+class Presenter(IPresenter):
+    def __init__(self, radius_value, n_surrounding_value = 1.0):
+        self.radius_value = radius_value
+        self.n_surrounding_value = n_surrounding_value
+
+
 
 # Obtener los nombres de los materiales y el diccionario de materiales
 nombres_materiales, material_dict = obtener_nombres_materiales()
@@ -15,44 +21,12 @@ nombres_materiales, material_dict = obtener_nombres_materiales()
 # Diccionario para almacenar los valores de lambda, n y k para cada página
 material_data = {}
 
-# Variable para almacenar el radio
-radius_value = None
-
-# Variable para almacenar el n del medio
-n_surrounding_value = 1.0  # Valor predeterminado
-
 # Mensaje de error
 error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 
 
-def actualizar_plot(plot, plot_option, radius_value):
-    plot.renderers = []  # Clear previous renderers
-    plot.yaxis.axis_label = plot_option.value  # Update y-axis label
+db_path = './refractive.db'
 
-    if radius_value is None:
-        return
-
-    colors = Category10[10]  # Use a color palette with 10 colors
-    color_index = 0
-    legend_items = []
-
-    # Eliminar las leyendas existentes
-    plot.legend.items = []
-
-    for material_name, data in material_data.items():
-        results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
-        x = data['lambda']
-        y = results[plot_option.value]
-        color = colors[color_index % len(colors)]  # Cycle through colors
-        line = plot.line(x, y, line_width=2, color=color)
-        legend_items.append(LegendItem(label=f'{plot_option.value} {material_name}', renderers=[line]))
-        color_index += 1
-
-    # Crear la leyenda y añadirla a la gráfica
-    legend = Legend(items=legend_items, location="top_right")  # Ajusta la ubicación de la leyenda
-    plot.add_layout(legend, 'center')  # 'center' coloca la leyenda sobre la gráfica
-
-db_path = r'C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\refractive.db'
 # Función que se ejecuta cuando el usuario selecciona materiales
 def mostrar_seleccion(event, page_selectors,plot, plot_option):
     seleccionados = set(event.new)
@@ -102,7 +76,23 @@ def mostrar_seleccion(event, page_selectors,plot, plot_option):
                         }
                     except Exception as e:
                         error_message.object = f"Error: {str(e)}"
-                actualizar_plot(plot, plot_option, radius_value)
+                IView.actualizar_plot()
 
             page_selector.param.watch(actualizar_valores, 'value')
-    actualizar_plot(plot, plot_option, radius_value)
+    IView.actualizar_plot()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

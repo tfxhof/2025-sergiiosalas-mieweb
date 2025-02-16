@@ -1,8 +1,11 @@
 import tempfile
 import zipfile
-from Calculo import calculate_mie_arrays
+from calculo import calculate_mie_arrays
 import panel as pn
-from Gestion import material_data, radius_value, n_surrounding_value, error_message
+from src.negocio.presenter import Presenter, material_data
+
+# Mensaje de error
+error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 
 def descargar_txt(radius_value, n_surrounding_value):
     try:
@@ -10,7 +13,7 @@ def descargar_txt(radius_value, n_surrounding_value):
             with zipfile.ZipFile(tmp_zip, 'w') as zipf:
                 for material_name, data in material_data.items():
                     lambda_values = data['lambda']
-                    results = calculate_mie_arrays(data, float(radius_value), float(n_surrounding_value))
+                    results = calculate_mie_arrays(data, float(Presenter.radius_value), float(Presenter.n_surrounding_value))
                     qext_values = results['qext']
                     qabs_values = results['qabs']
                     qsca_values = results['qsca']
