@@ -1,6 +1,8 @@
 import sqlite3
 
 import panel as pn
+from numba import none
+
 # Import the function from AccesoDatos.py
 from refractivesqlite import dboperations as DB
 from src.persistencia.acceso_datos import obtener_nombres_materiales
@@ -9,7 +11,7 @@ from src.presentacion.IView import IView
 
 
 class Presenter(IPresenter):
-    def __init__(self, radius_value, n_surrounding_value = 1.0):
+    def __init__(self, radius_value = None, n_surrounding_value = 1.0):
         self.radius_value = radius_value
         self.n_surrounding_value = n_surrounding_value
 

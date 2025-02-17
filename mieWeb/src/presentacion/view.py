@@ -29,6 +29,13 @@ class View(IView):
     def __init__(self, presenter):
         self.presenter = presenter  # Se guarda la instancia de Presenter
 
+    def show(self):
+        # Mostrar el layout
+        pn.extension()
+        layout.show()
+
+
+
 
 presenter = Presenter(100)  # Se crea una instancia de Presenter
 
@@ -234,6 +241,3 @@ layout = pn.Row(
 # Inicializar la gráfica
 actualizar_plot()
 
-# Mostrar el layout
-pn.extension()
-layout.show()

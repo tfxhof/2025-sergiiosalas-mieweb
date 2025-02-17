@@ -24,4 +24,9 @@ class IView(ABC):
         pass
 
 
+    @abstractmethod
+    def show(self):
+        pass
+
+
 
