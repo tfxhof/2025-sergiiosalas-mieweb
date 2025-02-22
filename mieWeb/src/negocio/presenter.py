@@ -2,10 +2,13 @@ import os
 import sqlite3
 
 import panel as pn
+from bokeh.models import LegendItem
+from bokeh.palettes import Category10
 from numba import none
 
 # Import the function from AccesoDatos.py
 from refractivesqlite import dboperations as DB
+from src.negocio import calculo
 from src.persistencia.acceso_datos import obtener_nombres_materiales, obtener_paginas_material, obtener_datos_pagina
 from src.negocio.IPresenter import IPresenter
 from src.presentacion.IView import IView
@@ -105,8 +108,28 @@ class Presenter(IPresenter):
 
 
 
+    def calcular_datos_grafica (self, plot_option):
 
+        if self.radius_value is None:
+            return None
 
+        colors = Category10[10]  # Use a color palette with 10 colors
+        color_index = 0
+        legend_items = []
+        data_plot = []
+
+        for material_name, data in self.material_data.items():
+            results = calculo.calculate_mie_arrays(
+                data, float(self.radius_value), float(self.n_surrounding_value)
+            )
+            x = data['lambda']
+            y = results[plot_option]
+            color = colors[color_index % len(colors)]  # Ciclo de colores
+            legend_item = LegendItem(label=f'{plot_option} {material_name}', renderers=[])
+            data_plot.append((x, y, color, legend_item))
+            color_index += 1
+
+        return data_plot, legend_items
 
 
 

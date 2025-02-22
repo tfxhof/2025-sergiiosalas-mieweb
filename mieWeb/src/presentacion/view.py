@@ -130,8 +130,6 @@ class View(IView):
         self.actualizar_plot()
 
 
-
-
     def show(self):
 
         # Actualizar el layout para incluir el RadioButtonGroup encima de la gráfica
@@ -184,31 +182,26 @@ class View(IView):
         pn.extension()
         layout.show()
 
-
-
+    # Función para actualizar la gráfica
     def actualizar_plot(self):
         self.plot.renderers = []  # Clear previous renderers
         self.plot.yaxis.axis_label = self.plot_option.value  # Update y-axis label
 
-        if self.presenter.radius_value is None:
+        resultado = self.presenter.calcular_datos_grafica(self.plot_option.value)
+        if resultado is None:
             return
 
-        colors = Category10[10]  # Use a color palette with 10 colors
-        color_index = 0
-        legend_items = []
+        data_plot, legend_items = resultado
 
         # Eliminar las leyendas existentes
         self.plot.legend.items = []
 
-        for material_name, data in self.presenter.get_material_data().items():
-            #que lo llame el presenter
-            results = calculo.calculate_mie_arrays(data, float(self.presenter.radius_value), float(self.presenter.n_surrounding_value))
-            x = data['lambda']
-            y = results[self.plot_option.value]
-            color = colors[color_index % len(colors)]  # Cycle through colors
+        # Dibujar cada línea en la gráfica
+        for x, y, color, legend_item in data_plot:
             line = self.plot.line(x, y, line_width=2, color=color)
-            legend_items.append(LegendItem(label=f'{self.plot_option.value} {material_name}', renderers=[line]))
-            color_index += 1
+            legend_item.renderers.append(line)  # Asociar línea con la leyenda
+            legend_items.append(legend_item)
+
 
         # Crear la leyenda y añadirla a la gráfica
         legend = Legend(items=legend_items, location="top_right")  # Ajusta la ubicación de la leyenda
