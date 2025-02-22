@@ -1,8 +1,14 @@
+import os
 import sqlite3
 from refractivesqlite import dboperations as DB
 
-# Ruta a la base de datos
-db_path = './refractive.db'
+
+# Obtener la ruta del directorio actual (donde está acceso_datos.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Construir la ruta de la base de datos dentro de la carpeta persistencia
+db_path = os.path.join(BASE_DIR, "refractive.db")
+
 
 # Función para conectar a la base de datos y obtener los nombres de los materiales y sus páginas
 def obtener_nombres_materiales():

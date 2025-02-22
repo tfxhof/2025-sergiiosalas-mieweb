@@ -1,19 +1,21 @@
 import tempfile
 import zipfile
-from calculo import calculate_mie_arrays
+from src.negocio.calculo import calculate_mie_arrays
 import panel as pn
-from src.negocio.presenter import Presenter, material_data
+
+from src.negocio import presenter
+from src.negocio.presenter import Presenter
 
 # Mensaje de error
 error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 
-def descargar_txt(radius_value, n_surrounding_value):
+def descargar_txt(presenter_instance):
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
             with zipfile.ZipFile(tmp_zip, 'w') as zipf:
-                for material_name, data in material_data.items():
+                for material_name, data in presenter_instance.get_material_data.items():
                     lambda_values = data['lambda']
-                    results = calculate_mie_arrays(data, float(Presenter.radius_value), float(Presenter.n_surrounding_value))
+                    results = calculate_mie_arrays(data, float(presenter_instance.radius_value), float(presenter_instance.n_surrounding_value))
                     qext_values = results['qext']
                     qabs_values = results['qabs']
                     qsca_values = results['qsca']
