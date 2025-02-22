@@ -6,7 +6,7 @@ from numba import none
 
 # Import the function from AccesoDatos.py
 from refractivesqlite import dboperations as DB
-from src.persistencia.acceso_datos import obtener_nombres_materiales
+from src.persistencia.acceso_datos import obtener_nombres_materiales, obtener_paginas_material, obtener_datos_pagina
 from src.negocio.IPresenter import IPresenter
 from src.presentacion.IView import IView
 from src.persistencia.acceso_datos import db_path
@@ -64,12 +64,10 @@ class Presenter(IPresenter):
 
         for nombre in seleccionados:
             if not any(widget.name.split(" for ")[1] == nombre for widget in page_selectors):
-                conn = sqlite3.connect(self.db_path)
-                cursor = conn.cursor()
-                cursor.execute("SELECT pageid, page FROM pages WHERE book = ?", (nombre,))
-                paginas = cursor.fetchall()
-                conn.close()
-                opciones_paginas = ['Select page'] + [pagina[1] for pagina in paginas]
+
+                paginas = obtener_paginas_material(nombre)
+
+                opciones_paginas = ['Select page'] + [pagina[0] for pagina in paginas]
                 page_selector = pn.widgets.Select(
                     name=f"Select page for {nombre}",
                     options=opciones_paginas,
@@ -84,15 +82,13 @@ class Presenter(IPresenter):
                     else:
                         page_name = event.new
                         try:
-                            conn = sqlite3.connect(self.db_path)
-                            cursor = conn.cursor()
-                            cursor.execute("SELECT pageid FROM pages WHERE page = ? AND book = ?", (page_name, nombre))
-                            page_id = cursor.fetchone()[0]
-                            conn.close()
-                            db = DB.Database(self.db_path)
-                            lambda_array = db.get_material_n_numpy(page_id)[:, 0]
-                            n_array = db.get_material_n_numpy(page_id)[:, 1]
-                            k_array = db.get_material_k_numpy(page_id)[:, 1]
+                            resultados = obtener_datos_pagina(nombre, page_name)
+
+                            lambda_array = resultados["lambda"]
+                            n_array = resultados["n"]
+                            k_array = resultados["k"]
+                            page_id = resultados["page_id"]
+
                             self.material_data[nombre] = {
                                 'lambda': lambda_array * 1000,  # Convertir a nm
                                 'n': n_array,
