@@ -17,7 +17,7 @@ from src.persistencia.acceso_datos import db_path
 
 class Presenter(IPresenter):
     def __init__(self, radius_value = None, n_surrounding_value = 1.0):
-        self.view = None
+        self.view: IView = None
         self.radius_value = radius_value
         self.n_surrounding_value = n_surrounding_value
 
@@ -26,9 +26,6 @@ class Presenter(IPresenter):
 
         # Diccionario para almacenar los valores de lambda, n y k para cada página
         self.material_data = {}
-
-        # Mensaje de error
-        self.error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 
         self.db_path = db_path
 
@@ -93,7 +90,7 @@ class Presenter(IPresenter):
                             page_id = resultados["page_id"]
 
                             self.material_data[nombre] = {
-                                'lambda': lambda_array * 1000,  # Convertir a nm
+                                'lambda': lambda_array,
                                 'n': n_array,
                                 'k': k_array,
                                 'page_id': page_id,
@@ -133,11 +130,25 @@ class Presenter(IPresenter):
 
 
 
+    def radius_store (self, radius):
+        try:
+            r = float(radius)
+            if r <= 0:
+                raise ValueError("Radius value must be greater than 0")
+            self.update_radius(r)
+            self.view.actualizar_plot()
+            self.view.show_error("")
+        except ValueError:
+            self.view.show_error("Error: Introduce a valid value for radius")
 
 
-
-
-
-
-
-
+    def n_surrounding_store(self, n_surrounding):
+        try:
+            n = float(n_surrounding) if n_surrounding else 1.0
+            if n <= 0:
+                raise ValueError("The value of the refractive index of the medium must be greater than 0")
+            self.update_n_surrounding(n)
+            self.view.actualizar_plot()
+            self.view.show_error("")
+        except ValueError:
+            self.view.show_error("Error: Enter a valid value for the refractive index of the medium")

@@ -20,12 +20,11 @@ from refractivesqlite import dboperations as DB
 
 
 from src.negocio.IPresenter import IPresenter
-from src.negocio.presenter import Presenter
 from src.presentacion.IView import IView
 from src.negocio import calculo, descarga
 
 class View(IView):
-    def __init__(self, presenter):
+    def __init__(self, presenter: IPresenter):
         self.presenter = presenter  # Se guarda la instancia de Presenter
 
         # Mensaje de error
@@ -42,8 +41,6 @@ class View(IView):
         # Contenedor para los widgets de selección de páginas
         self.page_selectors = pn.Column(sizing_mode="stretch_width")
 
-        # Mensaje de error
-        self.error_message = pn.pane.Markdown("", sizing_mode="stretch_width")
 
         # Initialize Bokeh output
         output_notebook()
@@ -207,32 +204,21 @@ class View(IView):
         legend = Legend(items=legend_items, location="top_right")  # Ajusta la ubicación de la leyenda
         self.plot.add_layout(legend, 'center')  # 'center' coloca la leyenda sobre la gráfica
 
+    def show_error(self, message):
+        # Mensaje de error
+        self.error_message.object = message
+
 
     # Función para manejar la entrada del radio
     def store_radius(self,event):
-        try:
-            r = float(self.radius_input.value)
-            if r <= 0:
-                raise ValueError("Radius value must be greater than 0")
-            self.presenter.update_radius(r)
-            self.actualizar_plot()
-            self.error_message.object = ""
-        except ValueError:
-            self.error_message.object = "Error: Introduce a valid value for radius"
+        self.presenter.radius_store(self.radius_input.value)
 
 
 
     # Función para manejar la entrada del n del medio
     def store_n_surrounding(self, event):
-        try:
-            n = float(self.n_surrounding_input.value) if self.n_surrounding_input.value else 1.0
-            if n <= 0:
-                raise ValueError("The value of the refractive index of the medium must be greater than 0")
-            self.presenter.update_n_surrounding(n)
-            self.actualizar_plot()
-            self.error_message.object = ""
-        except ValueError:
-            self.error_message.object = "Error: Enter a valid value for the refractive index of the medium"
+        self.presenter.n_surrounding_store(self.n_surrounding_input.value)
+
 
 
 

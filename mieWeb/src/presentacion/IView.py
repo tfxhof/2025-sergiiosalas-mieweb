@@ -29,4 +29,12 @@ class IView(ABC):
         pass
 
 
+    @abstractmethod
+    def show_error(self, error_message):
+        """
+        Displays an error message.
+        """
+        pass
+
+
 
