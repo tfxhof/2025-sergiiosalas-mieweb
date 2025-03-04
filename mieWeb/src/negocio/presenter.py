@@ -52,56 +52,34 @@ class Presenter(IPresenter):
 
 
 
+    def remove_from_material_data(self, nombre):
+        self.material_data.pop(nombre, None)
 
-    # Función que se ejecuta cuando el usuario selecciona materiales
-    def mostrar_seleccion(self, event, page_selectors,plot, plot_option):
-        seleccionados = set(event.new)
-        for widget in list(page_selectors):
-            nombre_material = widget.name.split(" for ")[1]
-            if nombre_material not in seleccionados:  # Si el material fue deseleccionado
-                page_selectors.remove(widget)  # Eliminar el selector de página
-                self.material_data.pop(nombre_material, None)  # Eliminar el material de `material_data`
 
-        for nombre in seleccionados:
-            if not any(widget.name.split(" for ")[1] == nombre for widget in page_selectors):
+    def obtener_opciones_paginas(self, nombre):
+        paginas = obtener_paginas_material(nombre)
+        opciones_paginas = ['Select page'] + [pagina[0] for pagina in paginas]
+        return opciones_paginas
 
-                paginas = obtener_paginas_material(nombre)
 
-                opciones_paginas = ['Select page'] + [pagina[0] for pagina in paginas]
-                page_selector = pn.widgets.Select(
-                    name=f"Select page for {nombre}",
-                    options=opciones_paginas,
-                    value='Select page',
-                    width=200
-                )
-                page_selectors.append(page_selector)
+    def obtener_valores (self, nombre, page_name):
+        try:
+            resultados = obtener_datos_pagina(nombre, page_name)
 
-                def actualizar_valores(event, nombre=nombre):
-                    if event.new == 'Select page':
-                        self.material_data.pop(nombre, None)
-                    else:
-                        page_name = event.new
-                        try:
-                            resultados = obtener_datos_pagina(nombre, page_name)
+            lambda_array = resultados["lambda"]
+            n_array = resultados["n"]
+            k_array = resultados["k"]
+            page_id = resultados["page_id"]
 
-                            lambda_array = resultados["lambda"]
-                            n_array = resultados["n"]
-                            k_array = resultados["k"]
-                            page_id = resultados["page_id"]
-
-                            self.material_data[nombre] = {
-                                'lambda': lambda_array,
-                                'n': n_array,
-                                'k': k_array,
-                                'page_id': page_id,
-                                'page_name': page_name
-                            }
-                        except Exception as e:
-                            self.error_message.object = f"Error: {str(e)}"
-                    self.view.actualizar_plot()
-
-                page_selector.param.watch(actualizar_valores, 'value')
-        self.view.actualizar_plot()
+            self.material_data[nombre] = {
+                'lambda': lambda_array,
+                'n': n_array,
+                'k': k_array,
+                'page_id': page_id,
+                'page_name': page_name
+            }
+        except Exception as e:
+            self.view.show_error(f"Error: {str(e)}")
 
 
 

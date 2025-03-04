@@ -1,16 +1,9 @@
 import io
 import sqlite3
 import panel as pn
-from bokeh.plotting import figure
-from bokeh.models import HoverTool, LegendItem, canvas
-from bokeh.io import output_notebook, export, export_svg
-
-
-from bokeh.palettes import Category10
+from bokeh.io import output_notebook
 from bokeh.models import Legend
-from bokeh.io.export import export_svgs
 from bokeh.plotting import figure, output_file, save
-import chromedriver_autoinstaller
 from bokeh.io.export import export_svgs
 from selenium import webdriver
 import tempfile
@@ -72,7 +65,7 @@ class View(IView):
 
         # Conectar la función mostrar_seleccion al multi-choice
         self.multi_choice.param.watch(
-            lambda event: self.presenter.mostrar_seleccion(event, self.page_selectors, self.plot, self.plot_option), 'value')
+            lambda event: self.manejar_seleccion(event), 'value')
 
 
         # Crear una entrada de texto para el radio
@@ -219,6 +212,43 @@ class View(IView):
     def store_n_surrounding(self, event):
         self.presenter.n_surrounding_store(self.n_surrounding_input.value)
 
+
+
+
+    def manejar_seleccion(self, event):
+        seleccionados = set(event.new)
+        for widget in list(self.page_selectors):
+            nombre_material = widget.name.split(" for ")[1]
+            if nombre_material not in seleccionados:  # Si el material fue deseleccionado
+                self.page_selectors.remove(widget)  # Eliminar el selector de página
+                self.presenter.remove_from_material_data(nombre_material)  # Eliminar el material de `material_data`
+
+
+        for nombre in seleccionados:
+            # Verifica que no exista un selector para el material
+            if not any(widget.name.split(" for ")[1] == nombre for widget in self.page_selectors):
+
+                opciones_paginas = self.presenter.obtener_opciones_paginas(nombre)
+
+                page_selector = pn.widgets.Select(
+                    name=f"Select page for {nombre}",
+                    options=opciones_paginas,
+                    value='Select page',
+                    width=200
+                )
+                self.page_selectors.append(page_selector)
+
+                #cuando el usuario cambia la página seleccionada en el selector
+                def actualizar_valores(event, nombre=nombre):
+                    if event.new == 'Select page':
+                        self.presenter.remove_from_material_data(nombre)
+                    else:
+                        page_name = event.new
+                        self.presenter.obtener_valores(nombre, page_name)
+                    self.actualizar_plot()
+
+                page_selector.param.watch(actualizar_valores, 'value')
+        self.actualizar_plot()
 
 
 

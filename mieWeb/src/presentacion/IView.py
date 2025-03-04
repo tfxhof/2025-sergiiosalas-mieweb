@@ -36,5 +36,9 @@ class IView(ABC):
         """
         pass
 
+    @abstractmethod
+    def manejar_seleccion(self, event):
+        pass
+
 
 

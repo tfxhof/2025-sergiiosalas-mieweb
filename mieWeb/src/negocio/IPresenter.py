@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+
 
 
 class IPresenter(ABC):
@@ -33,10 +33,6 @@ class IPresenter(ABC):
         pass
 
     @abstractmethod
-    def mostrar_seleccion(self, event, page_selectors, plot, plot_option):
-        pass
-
-    @abstractmethod
     def calcular_datos_grafica(self, plot_option):
         pass
 
@@ -46,4 +42,16 @@ class IPresenter(ABC):
 
     @abstractmethod
     def n_surrounding_store (self, n_surrounding):
+        pass
+
+    @abstractmethod
+    def remove_from_material_data(self, nombre_material):
+        pass
+
+    @abstractmethod
+    def obtener_opciones_paginas(self, nombre):
+        pass
+
+    @abstractmethod
+    def obtener_valores(self, nombre, page_name):
         pass
