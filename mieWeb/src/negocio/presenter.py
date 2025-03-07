@@ -1,11 +1,3 @@
-import os
-import sqlite3
-
-import panel as pn
-from numba import none
-
-# Import the function from AccesoDatos.py
-from refractivesqlite import dboperations as DB
 from src.negocio import calculo
 from src.persistencia.acceso_datos import obtener_nombres_materiales, obtener_paginas_material, obtener_datos_pagina
 from src.negocio.IPresenter import IPresenter

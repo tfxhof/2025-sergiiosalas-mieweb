@@ -5,7 +5,7 @@ from bokeh.palettes import Category10
 from bokeh.plotting import figure
 from src.negocio.IPresenter import IPresenter
 from src.presentacion.IView import IView
-from src.negocio.descarga import descargar_txt
+from src.negocio.descarga import descargar_txt, descargar_pdf
 
 class View(IView):
     def __init__(self, presenter: IPresenter):
@@ -100,6 +100,9 @@ class View(IView):
             button_type="primary",
             width=200
         )
+        # Conectar el botón de descarga al métod o
+        self.download_button_pdf.on_click(lambda event: descargar_pdf(self.plot))
+
 
         self.download_button_txt = pn.widgets.FileDownload(
             button_type='primary',
