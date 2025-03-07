@@ -2,7 +2,8 @@ import io
 import sqlite3
 import panel as pn
 from bokeh.io import output_notebook
-from bokeh.models import Legend
+from bokeh.models import Legend, LegendItem
+from bokeh.palettes import Category10
 from bokeh.plotting import figure, output_file, save
 from bokeh.io.export import export_svgs
 from selenium import webdriver
@@ -177,20 +178,26 @@ class View(IView):
         self.plot.renderers = []  # Clear previous renderers
         self.plot.yaxis.axis_label = self.plot_option.value  # Update y-axis label
 
-        resultado = self.presenter.calcular_datos_grafica(self.plot_option.value)
-        if resultado is None:
+        data_plot = self.presenter.calcular_datos_grafica(self.plot_option.value)
+        if data_plot is None:
             return
 
-        data_plot, legend_items = resultado
+        colors = Category10[10]  # Definir colores en la vista
+        legend_items = []
+        color_index = 0
 
         # Eliminar las leyendas existentes
         self.plot.legend.items = []
 
         # Dibujar cada línea en la gráfica
-        for x, y, color, legend_item in data_plot:
+        for material_name, x, y in data_plot:
+            color = colors[color_index % len(colors)]
             line = self.plot.line(x, y, line_width=2, color=color)
-            legend_item.renderers.append(line)  # Asociar línea con la leyenda
+
+            legend_item = LegendItem(label=f"{self.plot_option.value} {material_name}", renderers=[line])
             legend_items.append(legend_item)
+
+            color_index += 1
 
 
         # Crear la leyenda y añadirla a la gráfica
@@ -211,7 +218,6 @@ class View(IView):
     # Función para manejar la entrada del n del medio
     def store_n_surrounding(self, event):
         self.presenter.n_surrounding_store(self.n_surrounding_input.value)
-
 
 
 
@@ -249,6 +255,11 @@ class View(IView):
 
                 page_selector.param.watch(actualizar_valores, 'value')
         self.actualizar_plot()
+
+
+
+
+
 
 
 

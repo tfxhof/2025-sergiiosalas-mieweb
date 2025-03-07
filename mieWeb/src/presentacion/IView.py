@@ -41,4 +41,3 @@ class IView(ABC):
         pass
 
 
-

@@ -2,8 +2,6 @@ import os
 import sqlite3
 
 import panel as pn
-from bokeh.models import LegendItem
-from bokeh.palettes import Category10
 from numba import none
 
 # Import the function from AccesoDatos.py
@@ -16,7 +14,7 @@ from src.persistencia.acceso_datos import db_path
 
 
 class Presenter(IPresenter):
-    def __init__(self, radius_value = None, n_surrounding_value = 1.0):
+    def __init__(self, radius_value = None, n_surrounding_value = None):
         self.view: IView = None
         self.radius_value = radius_value
         self.n_surrounding_value = n_surrounding_value
@@ -81,32 +79,28 @@ class Presenter(IPresenter):
         except Exception as e:
             self.view.show_error(f"Error: {str(e)}")
 
-
-
-    def calcular_datos_grafica (self, plot_option):
-
-        if self.radius_value is None:
+    def calcular_datos_grafica(self, plot_option):
+        # Validar que los valores no sean None o cadenas vacías
+        if not self.radius_value or not self.n_surrounding_value:
             return None
 
-        colors = Category10[10]  # Use a color palette with 10 colors
-        color_index = 0
-        legend_items = []
+        try:
+            radius = float(self.radius_value)
+            n_surrounding = float(self.n_surrounding_value)
+            if radius <= 0 or n_surrounding <= 0:
+                return None
+        except ValueError:
+            return None  # Si hay un error de conversión, retornamos None
+
         data_plot = []
 
         for material_name, data in self.material_data.items():
-            results = calculo.calculate_mie_arrays(
-                data, float(self.radius_value), float(self.n_surrounding_value)
-            )
+            results = calculo.calculate_mie_arrays(data, radius, n_surrounding)
             x = data['lambda']
             y = results[plot_option]
-            color = colors[color_index % len(colors)]  # Ciclo de colores
-            legend_item = LegendItem(label=f'{plot_option} {material_name}', renderers=[])
-            data_plot.append((x, y, color, legend_item))
-            color_index += 1
+            data_plot.append((material_name, x, y))  # Solo devolver los datos puros
 
-        return data_plot, legend_items
-
-
+        return data_plot
 
     def radius_store (self, radius):
         try:
@@ -118,11 +112,12 @@ class Presenter(IPresenter):
             self.view.show_error("")
         except ValueError:
             self.view.show_error("Error: Introduce a valid value for radius")
+            return
 
 
     def n_surrounding_store(self, n_surrounding):
         try:
-            n = float(n_surrounding) if n_surrounding else 1.0
+            n = float(n_surrounding)
             if n <= 0:
                 raise ValueError("The value of the refractive index of the medium must be greater than 0")
             self.update_n_surrounding(n)
@@ -130,3 +125,4 @@ class Presenter(IPresenter):
             self.view.show_error("")
         except ValueError:
             self.view.show_error("Error: Enter a valid value for the refractive index of the medium")
+            return
