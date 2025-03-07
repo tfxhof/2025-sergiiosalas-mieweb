@@ -18,6 +18,8 @@ class Presenter(IPresenter):
         self.view: IView = None
         self.radius_value = radius_value
         self.n_surrounding_value = n_surrounding_value
+        self.valid_radius = False
+        self.valid_n_surrounding = False
 
         # Obtener los nombres de los materiales y el diccionario de materiales
         self.nombres_materiales, self.material_dict = obtener_nombres_materiales()
@@ -102,17 +104,29 @@ class Presenter(IPresenter):
 
         return data_plot
 
-    def radius_store (self, radius):
+    def radius_store(self, radius):
         try:
             r = float(radius)
             if r <= 0:
                 raise ValueError("Radius value must be greater than 0")
+
+            # Si el valor es válido, lo almacenamos
             self.update_radius(r)
-            self.view.actualizar_plot()
-            self.view.show_error("")
+            self.valid_radius = True
+            self.view.show_error("")  # Limpiar mensaje de error
+
+            # Solo actualizamos la gráfica si ambos valores son válidos
+            if self.valid_n_surrounding:
+                self.view.actualizar_plot()
+
+            else:
+                self.view.show_error("Enter a valid value for the refractive index of the medium")
+
         except ValueError:
-            self.view.show_error("Error: Introduce a valid value for radius")
-            return
+            # Almacenamos el valor inválido para el radio
+            self.update_radius(radius)
+            self.valid_radius = False
+            self.view.show_error("Error: Enter a valid value for radius")
 
 
     def n_surrounding_store(self, n_surrounding):
@@ -120,9 +134,21 @@ class Presenter(IPresenter):
             n = float(n_surrounding)
             if n <= 0:
                 raise ValueError("The value of the refractive index of the medium must be greater than 0")
+
+            # Si el valor es válido, lo almacenamos
             self.update_n_surrounding(n)
-            self.view.actualizar_plot()
-            self.view.show_error("")
+            self.valid_n_surrounding = True
+            self.view.show_error("")  # Limpiar mensaje de error
+
+            # Solo actualizamos la gráfica si ambos valores son válidos
+            if self.valid_radius:
+                self.view.actualizar_plot()
+            else:
+                self.view.show_error("Enter a valid value for radius")
+
+
         except ValueError:
+            # Almacenamos el valor inválido para el índice de refracción
+            self.update_n_surrounding(n_surrounding)
+            self.valid_n_surrounding = False
             self.view.show_error("Error: Enter a valid value for the refractive index of the medium")
-            return

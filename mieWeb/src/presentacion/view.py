@@ -257,10 +257,5 @@ class View(IView):
         self.actualizar_plot()
 
 
-
-
-
-
-
-
-
+    def clear_plot(self):
+        pass
