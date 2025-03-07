@@ -1,21 +1,11 @@
-import io
-import sqlite3
 import panel as pn
 from bokeh.io import output_notebook
 from bokeh.models import Legend, LegendItem
 from bokeh.palettes import Category10
-from bokeh.plotting import figure, output_file, save
-from bokeh.io.export import export_svgs
-from selenium import webdriver
-import tempfile
-import zipfile
-
-from refractivesqlite import dboperations as DB
-
-
+from bokeh.plotting import figure
 from src.negocio.IPresenter import IPresenter
 from src.presentacion.IView import IView
-from src.negocio import calculo, descarga
+from src.negocio.descarga import descargar_txt
 
 class View(IView):
     def __init__(self, presenter: IPresenter):
@@ -113,7 +103,7 @@ class View(IView):
 
         self.download_button_txt = pn.widgets.FileDownload(
             button_type='primary',
-            callback=lambda: descarga.descargar_txt(self.presenter),
+            callback=lambda: descargar_txt(self.presenter),
             filename="materials.zip"
         )
 
