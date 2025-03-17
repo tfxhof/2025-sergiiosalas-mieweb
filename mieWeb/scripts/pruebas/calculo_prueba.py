@@ -3,16 +3,6 @@ import miepython
 import sqlite3
 
 def calculate_mie_arrays(material_data, radius):
-    """
-    Calcula los coeficientes de extinción, dispersión y absorción para varios materiales.
-
-    Args:
-        material_data (dict): Diccionario donde las claves son los IDs de materiales y los valores son tuplas de arrays (lambda, n, k).
-        radius (float): Radio de las partículas en micrómetros.
-
-    Returns:
-        dict: Diccionario con los resultados por material, donde cada clave es un ID de material y el valor es una tupla de arrays (qext, qsca, qabs).
-    """
     results = {}
     for material_id, (valor_lambda_array, n_array, k_array) in material_data.items():
         # Calculo del índice complejo m y el parámetro x
