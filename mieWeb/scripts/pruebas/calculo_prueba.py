@@ -2,6 +2,7 @@ import numpy as np
 import miepython
 import sqlite3
 
+""""
 def calculate_mie_arrays(material_data, radius):
     results = {}
     for material_id, (valor_lambda_array, n_array, k_array) in material_data.items():
@@ -21,8 +22,8 @@ def calculate_mie_arrays(material_data, radius):
     return results
 
 # Conectar a la base de datos SQLite
-db_path = r"C:\Users\sersa\Desktop\UC\tfg\tfg\mieWeb\pruebas\prueba.db"
-conn = sqlite3.connect(db_path)
+#b_path = pruebas\prueba.db"
+#conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 # IDs de los materiales que queremos filtrar
@@ -60,3 +61,4 @@ for material_id, (qext_array, qsca_array, qabs_array) in results.items():
         print(f"    Coeficiente de absorción (qabs): {qabs_array[i]:.4f}")
 
 # Ejemplo: ahora puedes usar los resultados para gráficas en matplotlib
+"""

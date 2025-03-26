@@ -1,8 +1,7 @@
 import tempfile
 import zipfile
 from bokeh.io import export_svg
-from reportlab.graphics import renderPDF
-from svglib.svglib import svg2rlg
+
 
 from src.negocio.calculo import calculate_mie_arrays
 
@@ -47,28 +46,7 @@ def descargar_txt(presenter_instance):
 
 
 def descargar_pdf(plot):
-    """
-    Exporta la gráfica Bokeh a un archivo PDF manteniendo la calidad.
-    """
-    try:
-        # Exportar la gráfica a formato SVG
-        svg_path = "/tmp/graph.svg"  # Ruta temporal para el archivo SVG
-        export_svg(plot, filename=svg_path)
+    export_svg(plot, filename = "grafica.svg")
 
-        # Convertir el SVG a un objeto de gráficos
-        drawing = svg2rlg(svg_path)
-
-        # Ruta donde se guardará el archivo PDF
-        pdf_path = "grafica.pdf"
-
-        # Guardar el gráfico como PDF usando renderPDF
-        renderPDF.drawToFile(drawing, pdf_path)
-
-        # Mensaje de éxito
-        print(f"PDF guardado correctamente en {pdf_path}")
-
-    except Exception as e:
-        # Manejo de errores
-        print(f"Error al exportar la gráfica como PDF: {e}")
 
 

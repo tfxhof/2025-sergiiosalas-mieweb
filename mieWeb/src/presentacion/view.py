@@ -36,7 +36,8 @@ class View(IView):
             tools="pan,box_zoom,reset,hover",
             tooltips=[("Wavelength", "@x"), ("Value", "@y")],
             width=500,  # Fixed width
-            height=500  # Fixed height
+            height=500,  # Fixed height
+            output_backend = "svg"  # Enable SVG output
         )
 
         # Crear el contenedor para la gráfica sin leyenda
