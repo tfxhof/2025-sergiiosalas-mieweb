@@ -34,7 +34,7 @@ Once the dependencies are installed, you can run the application using:
 
 ```bash
 python main.py
-
+```
 
 
 
