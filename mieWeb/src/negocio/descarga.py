@@ -45,8 +45,6 @@ def descargar_txt(presenter_instance):
         print( f"Error: {str(e)}")
 
 
-def descargar_pdf(plot):
-    export_svg(plot, filename = "grafica.svg")
 
 
 

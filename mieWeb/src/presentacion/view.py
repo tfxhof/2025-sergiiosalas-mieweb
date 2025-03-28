@@ -5,7 +5,7 @@ from bokeh.palettes import Category10
 from bokeh.plotting import figure
 from src.negocio.IPresenter import IPresenter
 from src.presentacion.IView import IView
-from src.negocio.descarga import descargar_txt, descargar_pdf
+from src.negocio.descarga import descargar_txt
 
 class View(IView):
     def __init__(self, presenter: IPresenter):
@@ -33,7 +33,7 @@ class View(IView):
         self.plot = figure(
             x_axis_label='Wavelength (nm)',
             y_axis_label='qext',
-            tools="pan,box_zoom,reset,hover",
+            tools="pan,box_zoom,reset,hover, save",
             tooltips=[("Wavelength", "@x"), ("Value", "@y")],
             width=500,  # Fixed width
             height=500,  # Fixed height
@@ -43,6 +43,7 @@ class View(IView):
         # Crear el contenedor para la gráfica sin leyenda
         self.plot_pane = pn.pane.Bokeh(self.plot, sizing_mode="stretch_both", min_height=400, min_width=400, max_height=50,
                                   max_width=500)
+
 
         # Añadimos un RadioButtonGroup para seleccionar qué graficar
         self.plot_option = pn.widgets.RadioBoxGroup(
@@ -95,16 +96,6 @@ class View(IView):
         # Adjuntar la función store_n_surrounding al evento del botón
         self.confirm_n_surrounding_button.on_click(self.store_n_surrounding)
 
-        # Crear un botón para descargar la gráfica como PDF
-        self.download_button_pdf = pn.widgets.Button(
-            name="Download as PDF",
-            button_type="primary",
-            width=200
-        )
-        # Conectar el botón de descarga al métod o
-        self.download_button_pdf.on_click(lambda event: descargar_pdf(self.plot))
-
-
         self.download_button_txt = pn.widgets.FileDownload(
             button_type='primary',
             callback=lambda: descargar_txt(self.presenter),
@@ -150,7 +141,6 @@ class View(IView):
                     # Añadir el RadioButtonGroup para seleccionar la métrica
                     pn.Row(
                         self.plot_option,
-                        self.download_button_pdf,
                         self.download_button_txt,
                         # Usamos un Column para aplicar un espaciado
                         align='start',
