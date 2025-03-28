@@ -96,10 +96,64 @@ class TestActualizarPlot(unittest.TestCase):
 
 
 
+    def test_obtener_opciones_paginas(self):
+
+        # Crear una instancia del presenter y pasar el mock de la vista
+        presenter = Presenter()
+
+        # Crear la vista y pasar el presenter
+        view = View(presenter)
+
+        presenter.view = view
+
+        # Nombre del material a obtener las opciones de páginas
+        nombre_material = "Ag"
+
+        # Simular la función que obtiene las opciones de páginas
+        view.presenter.obtener_opciones_paginas = MagicMock(return_value=["Select page", "Johnson", "McPeak"])
+
+        # Llamar a la función que se está probando
+        opciones_paginas = view.presenter.obtener_opciones_paginas(nombre_material)
+
+        # Verificar que se haya llamado correctamente y que el resultado sea el esperado
+        view.presenter.obtener_opciones_paginas.assert_called_once_with(nombre_material)
+        self.assertEqual(opciones_paginas, ["Select page", "Johnson", "McPeak"])
 
 
 
 
+
+    def test_obtener_valores(self):
+        # Crear una instancia del presenter y pasar el mock de la vista
+        presenter = Presenter()
+
+        # Crear la vista y pasar el presenter
+        view = View(presenter)
+
+        presenter.view = view
+
+        # Simular los datos de la página
+        mock_data = {
+            "lambda": [500, 600, 700],
+            "n": [1.5, 1.6, 1.7],
+            "k": [0.1, 0.2, 0.3],
+            "page_id": 2,
+            "page_name": "Johnson"
+        }
+
+        # Reemplazar la función obtener_datos_pagina con el mock
+        view.presenter.obtener_valores = MagicMock(return_value=mock_data)
+
+        # Llamar a la función que se está probando
+        resultados = view.presenter.obtener_valores("Ag", "Johnson")
+
+        # Verificar que se haya llamado correctamente
+        view.presenter.obtener_valores.assert_called_once_with("Ag", "Johnson")
+
+        # Verificar que los datos se hayan almacenado correctamente en material_data
+        self.assertEqual(resultados['lambda'], [500, 600, 700])
+        self.assertEqual(resultados['n'], [1.5, 1.6, 1.7])
+        self.assertEqual(resultados['k'], [0.1, 0.2, 0.3])
 
 
 
