@@ -7,9 +7,11 @@ MieWeb is an interactive tool designed to compare the electromagnetic scattering
 
 ## Requirements
 
-- Python 3.x
-- Inkscape (for converting SVG to PDF)
-- Virtual environment to manage dependencies
+- numpy==1.23.5
+- panel==0.14.4
+- miepython==1.0.5
+- sqlite3 (builtin with Python)
+
 
 ## Installation Guide
 
@@ -17,7 +19,4 @@ MieWeb is an interactive tool designed to compare the electromagnetic scattering
 
 First, clone this repository to your local machine:
 
-```bash
-git clone https://github.com/your_user/MieWeb.git
-cd MieWeb
 
