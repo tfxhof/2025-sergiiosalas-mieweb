@@ -14,7 +14,7 @@ class Presenter(IPresenter):
         self.valid_n_surrounding = False
 
         # Obtener los nombres de los materiales y el diccionario de materiales
-        self.nombres_materiales = obtener_nombres_materiales()
+        self.nombres_materiales = []
 
         # Diccionario para almacenar los valores de lambda, n y k para cada página
         self.material_data = {}
@@ -28,6 +28,7 @@ class Presenter(IPresenter):
         self.radius_value = radius
 
     def get_nombres_materiales(self):
+        self.nombres_materiales = obtener_nombres_materiales()
         return self.nombres_materiales
 
     def get_material_data(self):

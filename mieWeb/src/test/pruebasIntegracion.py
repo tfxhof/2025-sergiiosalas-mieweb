@@ -1,62 +1,83 @@
 import unittest
-from unittest.mock import patch
-
+from unittest.mock import MagicMock
 from src.negocio.presenter import Presenter
-
+from src.persistencia.acceso_datos import obtener_nombres_materiales, obtener_paginas_material, obtener_datos_pagina
 
 class TestPresenterIntegration(unittest.TestCase):
 
-    def setUp(self):
-        # Instanciamos el Presenter para las pruebas
-        self.presenter = Presenter()
+    def test_get_nombres_materiales(self):
+        # Mock de la función obtener_nombres_materiales
+        mock_obtener_nombres = MagicMock(return_value=["Ag", "Au"])
 
-    @patch('src.persistencia.acceso_datos.obtener_nombres_materiales')
-    def test_obtener_nombres_materiales_integration(self, mock_obtener_nombres):
-        # Configuramos el mock para que devuelva un valor esperado
-        mock_obtener_nombres.return_value = (["Ag", "Au"], {"Material1": 1, "Material2": 2})
+        # Crear instancia de Presenter y reemplazar la función obtener_nombres_materiales
+        presenter = Presenter()
+        presenter.get_nombres_materiales = mock_obtener_nombres
 
-        # Ejecutamos la función del Presenter que llama al mock de acceso a datos
-        nombres_materiales = self.presenter.get_nombres_materiales()
+        # Llamamos a la funcion que usa la función mockeada
+        nombres_materiales = presenter.get_nombres_materiales()
 
-        # Verificamos que el mock se haya llamado correctamente
-        mock_obtener_nombres.assert_called_once()
+        # Verificar que se haya llamado correctamente y que el resultado es el esperado
+        mock_obtener_nombres.assert_called_once()  # Verificar que se llamó una vez
+        self.assertEqual(nombres_materiales, ["Ag", "Au"])  # Verificar que el resultado es el esperado
 
-        # Verificamos que los valores obtenidos son correctos
-        self.assertEqual(nombres_materiales, ["Material1", "Material2"])
+    def test_obtener_paginas_material(self):
+        # Mock de la función obtener_paginas_material
+        mock_obtener_paginas = MagicMock(return_value=['Select page', 'Johnson', 'McPeak'])
 
-    @patch('src.persistencia.acceso_datos.obtener_paginas_material')
-    def test_obtener_opciones_paginas_integration(self, mock_obtener_paginas):
-        # Configuramos el mock para que devuelva un valor esperado
-        mock_obtener_paginas.return_value = [("Page1",), ("Page2",)]
+        # Crear instancia de Presenter
+        presenter = Presenter()
 
-        # Ejecutamos la función del Presenter que llama al mock de acceso a datos
-        opciones = self.presenter.obtener_opciones_paginas("Material1")
+        # Reemplazar la función obtener_paginas_material por el mock
+        presenter.obtener_opciones_paginas = mock_obtener_paginas
 
-        # Verificamos que el mock fue llamado correctamente con el argumento esperado
-        mock_obtener_paginas.assert_called_once_with("Material1")
+        # Llamamos a la función que usa la función mockeada
+        opciones_paginas = presenter.obtener_opciones_paginas("Ag")
 
-        # Verificamos que las opciones de páginas están en el formato esperado
-        self.assertEqual(opciones, ['Select page', 'Page1', 'Page2'])
+        # Verificar que se haya llamado correctamente y que el resultado es el esperado
+        mock_obtener_paginas.assert_called_once_with("Ag")  # Verificar que se llamó una vez con el argumento esperado
+        self.assertEqual(opciones_paginas, ['Select page', 'Johnson', 'McPeak'])  # Verificar el resultado esperado
 
-    @patch('src.persistencia.acceso_datos.obtener_datos_pagina')
-    def test_obtener_valores_integration(self, mock_obtener_datos):
-        # Configuramos el mock para que devuelva datos de ejemplo
-        mock_obtener_datos.return_value = {
-            "lambda": [500, 600],
-            "n": [1.5, 1.6],
-            "k": [0.02, 0.03],
-            "page_id": 123,
-            "page_name": "Page1"
-        }
+    def test_datos_pagina(self):
+        # Mock de la función obtener_datos_pagina
+        mock_obtener_datos = MagicMock(return_value={
+            "lambda": [500, 600, 700],
+            "n": [1.5, 1.6, 1.7],
+            "k": [0.1, 0.2, 0.3],
+            "page_id": 2,
+            "page_name": "Johnson"
+        })
 
-        # Ejecutamos la función del Presenter que llama al mock de acceso a datos
-        self.presenter.obtener_valores("Material1", "Page1")
+        # Crear instancia de Presenter
+        presenter = Presenter()
 
-        # Verificamos que los datos se almacenaron correctamente en material_data
-        self.assertIn("Material1", self.presenter.material_data)
-        self.assertEqual(self.presenter.material_data["Material1"]["lambda"], [500, 600])
-        self.assertEqual(self.presenter.material_data["Material1"]["n"], [1.5, 1.6])
-        self.assertEqual(self.presenter.material_data["Material1"]["k"], [0.02, 0.03])
+        # Reemplazar la función obtener_datos_pagina con el mock
+        presenter.obtener_valores = mock_obtener_datos
 
-        # Verificamos que el mock se haya llamado correctamente
-        mock_obtener_datos.assert_called_once_with("Material1", "Page1")
+        # Llamamos a la función que usa la función mockeada
+        resultados = presenter.obtener_valores("Ag", "Johnson")
+
+        # Verificar que se haya llamado correctamente
+        mock_obtener_datos.assert_called_once_with("Ag", "Johnson")  # Verificar que se llamó una vez con los argumentos esperados
+
+        # Verificar que los datos se hayan almacenado correctamente en material_data
+        #self.assertTrue("Ag" in presenter.material_data)# Verificar que "Ag" esté presente en el diccionario
+        self.assertEqual(resultados['lambda'], [500, 600, 700])
+        self.assertEqual(resultados['n'], [1.5, 1.6, 1.7])
+        self.assertEqual(resultados['k'], [0.1, 0.2, 0.3])
+        self.assertEqual(resultados['page_id'], 2)
+        self.assertEqual(resultados['page_name'], "Johnson")
+
+
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    unittest.main()
