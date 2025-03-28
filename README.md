@@ -25,7 +25,9 @@ https://github.com/sergiiosalas/tfg.git
 
 Once you have cloned the repository, navigate into the mieWeb directory and install dependencies on your python environment:
 
-`pip install -r requirements.txt`
+```bash
+pip install -r requirements.txt
+```
 
 
 ### 3. Run the app
