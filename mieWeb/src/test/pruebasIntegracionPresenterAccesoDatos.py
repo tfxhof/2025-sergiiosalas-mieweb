@@ -68,16 +68,5 @@ class TestPresenterIntegration(unittest.TestCase):
         self.assertEqual(resultados['page_name'], "Johnson")
 
 
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     unittest.main()
