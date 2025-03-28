@@ -18,5 +18,24 @@ MieWeb is an interactive tool designed to compare the electromagnetic scattering
 ### 1. Clone the Repository
 
 First, clone this repository to your local machine:
+https://github.com/sergiiosalas/tfg.git
+
+
+### 2. Install dependencies
+
+Once you have cloned the repository, navigate into the mieWeb directory and install dependencies on your python environment:
+
+`pip install -r requirements.txt`
+
+
+### 3. Run the app
+
+Once the dependencies are installed, you can run the application using:
+
+```bash
+python main.py
+
+
+
 
 
