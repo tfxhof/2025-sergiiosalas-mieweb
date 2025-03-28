@@ -43,7 +43,7 @@ class Presenter(IPresenter):
 
 
     def remove_from_material_data(self, nombre):
-        self.material_data.pop(nombre, None)
+        self.material_data.pop(nombre)
 
 
     def obtener_opciones_paginas(self, nombre):
