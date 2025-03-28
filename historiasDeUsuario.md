@@ -19,8 +19,8 @@ de manera que pueda ajustar los parámetros del análisis a mis necesidades.
 Yo, como usuario, quiero poder introducir un valor del índice de refracción del medio (n), 
 de manera que pueda realizar los cálculos considerando el entorno en el que se encuentran los materiales.
 
-## Descarga de la gráfica como PDF
-Yo, como usuario, quiero poder descargar la gráfica generada como un archivo PDF, 
+## Descarga de la gráfica como SVG
+Yo, como usuario, quiero poder descargar la gráfica generada como un archivo SVG, 
 de manera que pueda guardar y compartir los resultados del análisis fácilmente.
 
 ## Descarga de un ZIP con los datos de los materiales seleccionados

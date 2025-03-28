@@ -16,9 +16,6 @@ class IPresenter(ABC):
     def get_nombres_materiales(self):
         pass
 
-    @abstractmethod
-    def get_material_dict(self):
-        pass
 
     @abstractmethod
     def get_material_data(self):

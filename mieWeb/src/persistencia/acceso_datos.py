@@ -25,7 +25,7 @@ def obtener_nombres_materiales():
             material_dict[nombre] = pageid
             nombres_vistos.add(nombre)
     nombres_unicos = sorted(material_dict.keys())
-    return nombres_unicos, material_dict
+    return nombres_unicos
 
 
 def obtener_paginas_material(nombre_material):
