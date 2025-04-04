@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from refractivesqlite import dboperations as DB
+from lib.refractivesqlite import dboperations as DB
 
 
 # Obtener la ruta del directorio actual (donde está acceso_datos.py)

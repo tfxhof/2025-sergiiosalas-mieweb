@@ -4,8 +4,8 @@ import yaml
 import sqlite3
 import numpy as np
 
-from refractivesqlite import material
-from refractivesqlite.material import Material
+from lib.refractivesqlite import material
+from lib.refractivesqlite.material import Material
 
 Shelf = namedtuple('Shelf', ['shelf', 'name'])
 Book = namedtuple('Book', ['book', 'name'])

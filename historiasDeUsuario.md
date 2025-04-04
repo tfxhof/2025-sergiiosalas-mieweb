@@ -4,6 +4,11 @@
 Yo, como usuario, quiero poder seleccionar materiales de una lista de materiales disponibles, 
 de manera que pueda incluirlos en la comparación y analizar sus propiedades ópticas.
 
+### 1. Prueba de éxito
+
+1. sdf
+2. dsf
+
 ## Eliminación de materiales de la selección
 Yo, como usuario, quiero poder eliminar materiales previamente seleccionados.
 
