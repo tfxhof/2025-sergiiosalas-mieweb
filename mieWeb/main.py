@@ -1,16 +1,14 @@
 from src.negocio.presenter import Presenter
 from src.presentacion.view import View
 
-def main():
-
-    presenter = Presenter()
-    view = View(presenter)
-
-    presenter.view = view
 
 
-    view.show()
+presenter = Presenter()
+view = View(presenter)
 
-if __name__=="__main__":
-    main()
+presenter.view = view
+
+view.show()
+
+
 
