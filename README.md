@@ -7,10 +7,8 @@ MieWeb is an interactive tool designed to compare the electromagnetic scattering
 
 ## Requirements
 
-- numpy==1.23.5
-- panel==0.14.4
-- miepython==1.0.5
-- sqlite3 (builtin with Python)
+- python==3.12
+- requirements.txt
 
 
 ## Installation Guide
@@ -21,7 +19,20 @@ First, clone this repository to your local machine:
 https://github.com/sergiiosalas/tfg.git
 
 
-### 2. Install dependencies
+### 2. Create a virtual environment (optional but recommended)
+
+It is recommended to use a virtual environment to manage dependencies. You can create and activate it using:
+
+```bash
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+```
+
+
+### 3. Install dependencies
 
 Once you have cloned the repository, navigate into the mieWeb directory and install dependencies on your python environment:
 
@@ -30,7 +41,7 @@ pip install -r requirements.txt
 ```
 
 
-### 3. Run the app
+### 4. Run the app
 
 Once the dependencies are installed, you can run the application using:
 
