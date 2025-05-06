@@ -65,6 +65,7 @@ class View(IView):
         self.radius_input = pn.widgets.TextInput(
             name='Radius (nm)',
             placeholder='Enter the radius value in nanometers',
+            value='50',  # Valor predeterminado
             width=300
         )
 
