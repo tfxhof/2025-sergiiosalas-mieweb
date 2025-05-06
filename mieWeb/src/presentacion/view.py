@@ -98,9 +98,10 @@ class View(IView):
         self.confirm_n_surrounding_button.on_click(self.store_n_surrounding)
 
         self.download_button_txt = pn.widgets.FileDownload(
+            label="Download efficiencies (q)",
             button_type='primary',
             callback=lambda: descargar_txt(self.presenter),
-            filename="materials.zip"
+            filename="efficiencies.zip"
         )
 
         # Inicializar la gráfica
@@ -156,6 +157,7 @@ class View(IView):
         )
         # Mostrar el layout
         pn.extension()
+        pn.config.title = "Mie Web"
         layout.show()
 
     # Función para actualizar la gráfica
