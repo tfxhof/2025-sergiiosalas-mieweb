@@ -13,13 +13,20 @@ MieWeb is an interactive tool designed to compare the electromagnetic scattering
 
 ## Installation Guide
 
-### 1. Clone the Repository
+### 1. Clone the Repository and navigate into mieWeb
 
 First, clone this repository to your local machine:
-https://github.com/sergiiosalas/tfg.git
 
+```bash
+git clone https://github.com/sergiiosalas/tfg.git
+```
 
-### 2. Create a virtual environment (optional but recommended)
+Then, navigate into the mieWeb directory where the application code is located:
+```bash
+cd tfg/mieWeb
+```
+
+### 2. Create and activate a virtual environment (optional but recommended)
 
 It is recommended to use a virtual environment to manage dependencies. You can create and activate it using:
 
