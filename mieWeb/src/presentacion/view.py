@@ -157,8 +157,14 @@ class View(IView):
         )
         # Mostrar el layout
         pn.extension()
-        pn.config.title = "Mie Web"
-        layout.show()
+
+        template = pn.template.MaterialTemplate(
+            title="Mie Web",  # Cambia el título de la pestaña
+        )
+
+        template.main.append(layout)
+        template.show()
+        #layout.show()
 
     # Función para actualizar la gráfica
     def actualizar_plot(self):
@@ -227,7 +233,7 @@ class View(IView):
                     name=f"Select page for {nombre}",
                     options=opciones_paginas,
                     value='Select page',
-                    width=200
+                    width=250
                 )
                 self.page_selectors.append(page_selector)
 
