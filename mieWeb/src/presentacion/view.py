@@ -84,7 +84,7 @@ class View(IView):
             name='Refractive index of the medium',
             placeholder='Enter value',
             value='1',  # Valor predeterminado
-            width=300
+            width=300,
         )
 
         # Botón para confirmar el n del medio
@@ -104,9 +104,40 @@ class View(IView):
             filename="efficiencies.zip"
         )
 
+        # Crear un botón de información
+        self.info_button = pn.widgets.Button(
+            name="ℹ️",  # Ícono de información
+            button_type="light",
+            width=50
+        )
+
+        self.info_dialog = pn.pane.Markdown(
+            """
+            ## How to use the app:
+            1. Select the materials you want to compare from the list.
+            2. Adjust the radius and the surrounding refractive index as needed.
+            3. Choose the metric (qext, qsca, or qabs) to visualize on the graph.
+            4. Download the computed results in TXT or SVG format.
+            """,
+            width=400,
+            height=200,
+            margin=10,  # Margen alrededor del diálogo
+            sizing_mode="stretch_width"  # Ajuste de tamaño
+        )
+
+        # Ocultar el diálogo inicialmente
+        self.info_dialog.visible = False
+
+        # Conectar el botón para mostrar/ocultar el diálogo
+        self.info_button.on_click(lambda event: self.toggle_info_dialog())
+
+
         # Inicializar la gráfica
         self.actualizar_plot()
 
+    def toggle_info_dialog(self):
+        # Alternar la visibilidad del diálogo
+        self.info_dialog.visible = not self.info_dialog.visible
 
     def show(self):
 
@@ -114,7 +145,7 @@ class View(IView):
         layout = pn.Row(
             # Columna izquierda: Selector de materiales y páginas
             pn.Column(
-                self.multi_choice,  # Selector de materiales
+             self.multi_choice,  # Selector de materiales
                 self.page_selectors,  # Selectores de páginas dinámicos
                 width=400  # Ancho fijo para esta columna
             ),
@@ -151,7 +182,14 @@ class View(IView):
                         self.plot_pane,  # Gráfica
                     ),
                 ),
-                max_width=1000  # Ancho fijo para esta columna
+                max_width=500  # Ancho fijo para esta columna
+            ),
+            # Columna derecha: Botón de información
+            pn.Column(
+                self.info_button,  # Botón de información
+                self.info_dialog,  # Diálogo de información
+                width=10,  # Ancho fijo para esta columna
+                margin=(0, 0, 0, 0)
             ),
             sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
         )
