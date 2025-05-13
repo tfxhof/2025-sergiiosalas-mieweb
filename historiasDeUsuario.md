@@ -4,11 +4,6 @@
 Yo, como usuario, quiero poder seleccionar materiales de una lista de materiales disponibles, 
 de manera que pueda incluirlos en la comparación y analizar sus propiedades ópticas.
 
-### 1. Prueba de éxito
-
-1. sdf
-2. dsf
-
 ## Eliminación de materiales de la selección
 Yo, como usuario, quiero poder eliminar materiales previamente seleccionados.
 
@@ -31,6 +26,10 @@ de manera que pueda guardar y compartir los resultados del análisis fácilmente
 ## Descarga de un ZIP con los datos de los materiales seleccionados
 Yo, como usuario, quiero poder descargar un archivo ZIP que contenga los datos de los materiales seleccionados.
 
-## Intercambiar entre distintas gráficas (qext, qsca, qabs)
+## Intercambio entre distintas gráficas (qext, qsca, qabs)
 Yo, como usuario, quiero poder alternar entre diferentes tipos de gráficos (extinción, dispersión y absorción), 
 de manera que pueda analizar cada una de las propiedades ópticas de los materiales de forma independiente.
+
+## Despliegue de información
+Yo, como usuario, quiero poder clicar en un icono de información que muestre un desplegable con unas instrucciones 
+básicas de uso de la aplicación.
