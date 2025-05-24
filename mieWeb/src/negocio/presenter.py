@@ -53,23 +53,19 @@ class Presenter(IPresenter):
 
 
     def obtener_valores (self, nombre, page_name):
+
+        resultados = self.obtener_datos_pagina(nombre, page_name)
+
+        self.material_data[nombre] = resultados
+        return resultados
+
+    def obtener_datos_pagina(self, nombre, page_name):
         try:
             resultados = obtener_datos_pagina(nombre, page_name)
-
-            lambda_array = resultados["lambda"]
-            n_array = resultados["n"]
-            k_array = resultados["k"]
-            page_id = resultados["page_id"]
-
-            self.material_data[nombre] = {
-                'lambda': lambda_array,
-                'n': n_array,
-                'k': k_array,
-                'page_id': page_id,
-                'page_name': page_name
-            }
+            return resultados
         except Exception as e:
             self.view.show_error(f"Error: {str(e)}")
+            return None
 
     def calcular_datos_grafica(self, plot_option):
         # Validar que los valores no sean None o cadenas vacías

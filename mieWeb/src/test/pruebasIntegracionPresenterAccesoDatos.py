@@ -51,16 +51,15 @@ class TestPresenterIntegration(unittest.TestCase):
         presenter = Presenter()
 
         # Reemplazar la función obtener_datos_pagina con el mock
-        presenter.obtener_valores = mock_obtener_datos
+        presenter.obtener_datos_pagina = mock_obtener_datos
 
         # Llamamos a la función que usa la función mockeada
         resultados = presenter.obtener_valores("Ag", "Johnson")
 
         # Verificar que se haya llamado correctamente
-        mock_obtener_datos.assert_called_once_with("Ag", "Johnson")  # Verificar que se llamó una vez con los argumentos esperados
+        mock_obtener_datos.assert_called_once_with("Ag", "Johnson")
 
         # Verificar que los datos se hayan almacenado correctamente en material_data
-        #self.assertTrue("Ag" in presenter.material_data)# Verificar que "Ag" esté presente en el diccionario
         self.assertEqual(resultados['lambda'], [500, 600, 700])
         self.assertEqual(resultados['n'], [1.5, 1.6, 1.7])
         self.assertEqual(resultados['k'], [0.1, 0.2, 0.3])
