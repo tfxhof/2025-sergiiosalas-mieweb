@@ -1,5 +1,15 @@
 # MieWeb Project - Mie Calculation Interactive Tool
 
+---
+
+## Metadatos TfxHoF
+
+- Autor: [Sergio Salas Sánchez]()
+- Título: [Herramienta web para comparar la dispersión de luz por partículas esféricas de diferentes materiales mediante cálculos de Mie]()
+- Fecha: Junio 2025
+
+---
+
 ## Description
 
 MieWeb is an interactive tool designed to compare the electromagnetic scattering response of different materials using Mie theory. It allows users to graphically visualize the absorption and scattering properties of optical materials, making it easier to compare their characteristics without requiring programming knowledge.
