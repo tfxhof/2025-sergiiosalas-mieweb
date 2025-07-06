@@ -1,3 +1,14 @@
+---
+title: Mieweb
+emoji: 📈
+colorFrom: gray
+colorTo: green
+sdk: docker
+pinned: false
+license: apache-2.0
+short_description: Web app to calculate Mie extintion coeffitients
+---
+
 # MieWeb Project - Mie Calculation Interactive Tool
 
 ---
@@ -65,7 +76,3 @@ Once the dependencies are installed, you can run the application using:
 ```bash
 python main.py
 ```
-
-
-
-
