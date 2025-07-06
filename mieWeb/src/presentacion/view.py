@@ -26,9 +26,6 @@ class View(IView):
         self.page_selectors = pn.Column(sizing_mode="stretch_width")
 
 
-        # Initialize Bokeh output
-        output_notebook()
-
         # Create a Bokeh figure with fixed dimensions
         self.plot = figure(
             x_axis_label='Wavelength (nm)',
@@ -198,11 +195,10 @@ class View(IView):
 
         template = pn.template.MaterialTemplate(
             title="Mie Web",  # Cambia el título de la pestaña
-        )
+        ).servable(title="Mie Web")  # Cambia el título de la pestaña
 
         template.main.append(layout)
-        template.show()
-        #layout.show()
+        layout.show()
 
     # Función para actualizar la gráfica
     def actualizar_plot(self):
