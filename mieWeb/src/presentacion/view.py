@@ -40,8 +40,12 @@ class View(IView):
         )
 
         # Crear el contenedor para la gráfica sin leyenda
-        self.plot_pane = pn.pane.Bokeh(self.plot, sizing_mode="stretch_both", min_height=400, min_width=400, max_height=50,
-                                  max_width=500)
+        self.plot_pane = pn.pane.Bokeh(self.plot,
+                                       sizing_mode="stretch_both",
+                                       min_height=400,
+                                       max_height=500,
+                                       min_width=400,
+                                       max_width=500)
 
 
         # Añadimos un RadioButtonGroup para seleccionar qué graficar
@@ -105,7 +109,7 @@ class View(IView):
 
         # Crear un botón de información
         self.info_button = pn.widgets.Button(
-            name="ℹ️",  # Ícono de información
+            name="ℹ️",  # icono de información
             button_type="light",
             width=50
         )
@@ -192,9 +196,8 @@ class View(IView):
             ),
             sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
         )
-        layout.show()
 
-        template = pn.template.MaterialTemplate(
+        return pn.template.MaterialTemplate(
             title="Mie Web",  # Cambia el título de la pestaña
             main=layout,  # Añade el layout principal
         ).servable(title="Mie Web")  # Cambia el título de la pestaña
