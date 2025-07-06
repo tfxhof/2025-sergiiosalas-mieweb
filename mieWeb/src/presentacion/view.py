@@ -9,6 +9,8 @@ from src.negocio.descarga import descargar_txt
 
 class View(IView):
     def __init__(self, presenter: IPresenter):
+        pn.extension() # Inicializar Panel
+
         self.presenter = presenter  # Se guarda la instancia de Presenter
 
         # Mensaje de error
@@ -190,15 +192,12 @@ class View(IView):
             ),
             sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
         )
-        # Mostrar el layout
-        pn.extension()
+        layout.show()
 
         template = pn.template.MaterialTemplate(
             title="Mie Web",  # Cambia el título de la pestaña
+            main=layout,  # Añade el layout principal
         ).servable(title="Mie Web")  # Cambia el título de la pestaña
-
-        template.main.append(layout)
-        layout.show()
 
     # Función para actualizar la gráfica
     def actualizar_plot(self):
