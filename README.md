@@ -15,9 +15,10 @@ short_description: Web app to calculate Mie extintion coeffitients
 
 ## Metadatos TfxHoF
 
-- Autor: [Sergio Salas Sánchez]()
+- Autor: [Sergio Salas Sánchez](https://www.linkedin.com/in/sergio-salas-s%C3%A1nchez-6093a5364/)
 - Título: [Herramienta web para comparar la dispersión de luz por partículas esféricas de diferentes materiales mediante cálculos de Mie]()
 - Fecha: Junio 2025
+- Link: https://huggingface.co/spaces/alfonsodelavega/mieweb
 
 ---
 
@@ -25,14 +26,16 @@ short_description: Web app to calculate Mie extintion coeffitients
 
 MieWeb is an interactive tool designed to compare the electromagnetic scattering response of different materials using Mie theory. It allows users to graphically visualize the absorption and scattering properties of optical materials, making it easier to compare their characteristics without requiring programming knowledge.
 
+## Online tool
 
-## Requirements
+The tools is currently available online in a [HuggingFace space](https://huggingface.co/spaces/alfonsodelavega/mieweb).
+
+## Local Installation Guide
+
+### Requirements
 
 - python==3.12
 - requirements.txt
-
-
-## Installation Guide
 
 ### 1. Clone the Repository and navigate into mieWeb
 
