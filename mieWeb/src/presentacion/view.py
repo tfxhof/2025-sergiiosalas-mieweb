@@ -20,13 +20,12 @@ class View(IView):
         self.multi_choice = pn.widgets.MultiChoice(
             name="Select materials",
             options= self.presenter.get_nombres_materiales(),
-            width=350,
-            placeholder="Select the materials you wish to compare"
+            width=320,
+            placeholder="Select the materials to compare"
         )
 
         # Contenedor para los widgets de selección de páginas
         self.page_selectors = pn.Column(sizing_mode="stretch_width")
-
 
         # Create a Bokeh figure with fixed dimensions
         self.plot = figure(
@@ -47,7 +46,6 @@ class View(IView):
                                        min_width=400,
                                        max_width=500)
 
-
         # Añadimos un RadioButtonGroup para seleccionar qué graficar
         self.plot_option = pn.widgets.RadioBoxGroup(
             name='Select metric to plot',
@@ -62,7 +60,6 @@ class View(IView):
         # Conectar la función mostrar_seleccion al multi-choice
         self.multi_choice.param.watch(
             lambda event: self.manejar_seleccion(event), 'value')
-
 
         # Crear una entrada de texto para el radio
         self.radius_input = pn.widgets.TextInput(
@@ -100,6 +97,7 @@ class View(IView):
         # Adjuntar la función store_n_surrounding al evento del botón
         self.confirm_n_surrounding_button.on_click(self.store_n_surrounding)
 
+        # Botón para descargar los resultados
         self.download_button_txt = pn.widgets.FileDownload(
             label="Download efficiencies (q)",
             button_type='primary',
@@ -109,98 +107,49 @@ class View(IView):
 
         # Crear un botón de información
         self.info_button = pn.widgets.Button(
-            name="ℹ️",  # icono de información
-            button_type="light",
+            name="Instructions",
+            button_type="warning",
             width=50
         )
 
-        self.info_dialog = pn.pane.Markdown(
+        # Conectar el botón para mostrar/ocultar el diálogo
+        self.info_button.on_click(lambda event: self.template.open_modal())
+
+        # Inicializar la gráfica
+        self.actualizar_plot()
+
+        sidebar = [self.radius_input, self.confirm_radius_button,
+                   self.n_surrounding_input, self.confirm_n_surrounding_button,
+                   self.error_message,
+                   self.multi_choice, self.page_selectors]
+
+        main = [self.plot_option,
+                self.plot_pane,
+                self.download_button_txt]
+
+        self.template =  pn.template.BootstrapTemplate(
+            title="Mie Web",
+            header=self.info_button,
+            main=main,
+            sidebar=sidebar
+        )
+
+        self.template.modal.append(
             """
-            ## How to use the app:
+            # How to use the app:
             1. Select the materials you want to compare from the list.
             2. Adjust the radius and the surrounding refractive index as needed.
             3. Choose the metric (qext, qsca, or qabs) to visualize on the graph.
             4. Download the computed results in TXT or SVG format.
-            """,
-            width=400,
-            height=200,
-            margin=10,  # Margen alrededor del diálogo
-            sizing_mode="stretch_width"  # Ajuste de tamaño
+            """
         )
-
-        # Ocultar el diálogo inicialmente
-        self.info_dialog.visible = False
-
-        # Conectar el botón para mostrar/ocultar el diálogo
-        self.info_button.on_click(lambda event: self.toggle_info_dialog())
-
-
-        # Inicializar la gráfica
-        self.actualizar_plot()
 
     def toggle_info_dialog(self):
         # Alternar la visibilidad del diálogo
         self.info_dialog.visible = not self.info_dialog.visible
 
     def show(self):
-
-        # Actualizar el layout para incluir el RadioButtonGroup encima de la gráfica
-        layout = pn.Row(
-            # Columna izquierda: Selector de materiales y páginas
-            pn.Column(
-             self.multi_choice,  # Selector de materiales
-                self.page_selectors,  # Selectores de páginas dinámicos
-                width=400  # Ancho fijo para esta columna
-            ),
-            # Columna central: Radio, gráfica y botón de descarga
-            pn.Column(
-                pn.Row(
-                    self.radius_input,  # Entrada para el radio
-                    pn.Column(  # Usamos un Column para aplicar un espaciado
-                        self.confirm_radius_button,  # Botón para confirmar el radio
-                        sizing_mode='fixed',  # Tamaño fijo para que el botón no estire
-                        margin=(16, 0, 0, 0)  # Eliminar márgenes adicionales
-                    ),
-                ),
-                pn.Row(
-                    self.n_surrounding_input,  # Entrada para el n del medio
-                    pn.Column(  # Usamos un Column para aplicar un espaciado
-                        self.confirm_n_surrounding_button,  # Botón para confirmar el n del medio
-                        sizing_mode='fixed',  # Tamaño fijo para que el botón no estire
-                        margin=(16, 0, 0, 0)  # Eliminar márgenes adicionales
-                    ),
-                ),
-                pn.Row(
-                    self.error_message,  # Mensaje de error
-                ),
-                pn.Column(
-                    # Añadir el RadioButtonGroup para seleccionar la métrica
-                    pn.Row(
-                        self.plot_option,
-                        self.download_button_txt,
-                        # Usamos un Column para aplicar un espaciado
-                        align='start',
-                    ),
-                    pn.Row(
-                        self.plot_pane,  # Gráfica
-                    ),
-                ),
-                max_width=500  # Ancho fijo para esta columna
-            ),
-            # Columna derecha: Botón de información
-            pn.Column(
-                self.info_button,  # Botón de información
-                self.info_dialog,  # Diálogo de información
-                width=10,  # Ancho fijo para esta columna
-                margin=(0, 0, 0, 0)
-            ),
-            sizing_mode="stretch_width"  # Se adapta al tamaño de la pantalla
-        )
-
-        return pn.template.MaterialTemplate(
-            title="Mie Web",  # Cambia el título de la pestaña
-            main=layout,  # Añade el layout principal
-        ).servable(title="Mie Web")  # Cambia el título de la pestaña
+        return self.template.servable()
 
     # Función para actualizar la gráfica
     def actualizar_plot(self):
