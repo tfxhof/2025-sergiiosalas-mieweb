@@ -6,12 +6,14 @@ from src.persistencia.acceso_datos import db_path
 
 
 class Presenter(IPresenter):
-    def __init__(self, radius_value = None, n_surrounding_value = None):
+    def __init__(self, radius_value, n_surrounding_value):
         self.view: IView = None
+
         self.radius_value = radius_value
+        self.valid_radius = True
+
         self.n_surrounding_value = n_surrounding_value
-        self.valid_radius = False
-        self.valid_n_surrounding = False
+        self.valid_n_surrounding = True
 
         # Obtener los nombres de los materiales y el diccionario de materiales
         self.nombres_materiales = []
@@ -39,8 +41,6 @@ class Presenter(IPresenter):
 
     def get_radius_value(self):
         return self.radius_value
-
-
 
     def remove_from_material_data(self, nombre):
         self.material_data.pop(nombre)

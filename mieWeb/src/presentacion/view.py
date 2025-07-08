@@ -18,10 +18,10 @@ class View(IView):
 
         # Crear un widget de selección múltiple con Panel
         self.multi_choice = pn.widgets.MultiChoice(
-            name="Select materials",
+            name="Materials",
             options= self.presenter.get_nombres_materiales(),
             width=320,
-            placeholder="Select the materials to compare"
+            placeholder="Type to search"
         )
 
         # Contenedor para los widgets de selección de páginas
@@ -65,37 +65,19 @@ class View(IView):
         self.radius_input = pn.widgets.TextInput(
             name='Radius (nm)',
             placeholder='Enter the radius value in nanometers',
-            value='50',  # Valor predeterminado
+            value=str(self.presenter.get_radius_value()),  # Valor predeterminado
             width=300
         )
-
-        # Botón para confirmar el radio
-        self.confirm_radius_button = pn.widgets.Button(
-            name='Confirm radius',
-            button_type='primary',
-            width=50
-        )
-
-        # Adjuntar la función store_radius al evento del botón
-        self.confirm_radius_button.on_click(self.store_radius)
+        self.radius_input.param.watch(lambda event: self.store_radius(event), 'value')
 
         # Crear una entrada de texto para el n del medio
         self.n_surrounding_input = pn.widgets.TextInput(
             name='Refractive index of the medium',
             placeholder='Enter value',
-            value='1',  # Valor predeterminado
+            value=str(self.presenter.get_n_surrounding_value()),  # Valor predeterminado
             width=300,
         )
-
-        # Botón para confirmar el n del medio
-        self.confirm_n_surrounding_button = pn.widgets.Button(
-            name='Confirm value',
-            button_type='primary',
-            width=50
-        )
-
-        # Adjuntar la función store_n_surrounding al evento del botón
-        self.confirm_n_surrounding_button.on_click(self.store_n_surrounding)
+        self.n_surrounding_input.param.watch(lambda event: self.store_n_surrounding(event), 'value')
 
         # Botón para descargar los resultados
         self.download_button_txt = pn.widgets.FileDownload(
@@ -118,10 +100,11 @@ class View(IView):
         # Inicializar la gráfica
         self.actualizar_plot()
 
-        sidebar = [self.radius_input, self.confirm_radius_button,
-                   self.n_surrounding_input, self.confirm_n_surrounding_button,
+        sidebar = [self.radius_input,
+                   self.n_surrounding_input,
                    self.error_message,
-                   self.multi_choice, self.page_selectors]
+                   self.multi_choice,
+                   self.page_selectors]
 
         main = [self.plot_option,
                 self.plot_pane,
@@ -137,8 +120,8 @@ class View(IView):
         self.template.modal.append(
             """
             # How to use the app:
-            1. Select the materials you want to compare from the list.
-            2. Adjust the radius and the surrounding refractive index as needed.
+            1. Adjust the radius and/or the surrounding refractive index as needed.
+            2. Select the materials you want to compare.
             3. Choose the metric (qext, qsca, or qabs) to visualize on the graph.
             4. Download the computed results in TXT or SVG format.
             """
@@ -188,14 +171,14 @@ class View(IView):
 
 
     # Función para manejar la entrada del radio
-    def store_radius(self,event):
-        self.presenter.radius_store(self.radius_input.value)
+    def store_radius(self, event):
+        self.presenter.radius_store(event.new)
 
 
 
     # Función para manejar la entrada del n del medio
     def store_n_surrounding(self, event):
-        self.presenter.n_surrounding_store(self.n_surrounding_input.value)
+        self.presenter.n_surrounding_store(event.new)
 
 
 
